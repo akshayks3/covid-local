@@ -19,8 +19,8 @@
     "static/js/7.31a7ca1e.chunk.js.map": "/covid-local/static/js/7.31a7ca1e.chunk.js.map",
     "static/js/8.3aadee6f.chunk.js": "/covid-local/static/js/8.3aadee6f.chunk.js",
     "static/js/8.3aadee6f.chunk.js.map": "/covid-local/static/js/8.3aadee6f.chunk.js.map",
-    "main.js": "/covid-local/static/js/main.5c610d8e.chunk.js",
-    "main.js.map": "/covid-local/static/js/main.5c610d8e.chunk.js.map",
+    "main.js": "/covid-local/static/js/main.660f0eac.chunk.js",
+    "main.js.map": "/covid-local/static/js/main.660f0eac.chunk.js.map",
     "runtime-main.js": "/covid-local/static/js/runtime-main.e771ebba.js",
     "runtime-main.js.map": "/covid-local/static/js/runtime-main.e771ebba.js.map",
     "static/js/11.896c0ab3.chunk.js": "/covid-local/static/js/11.896c0ab3.chunk.js",
@@ -114,6 +114,6 @@
   "entrypoints": [
     "static/js/runtime-main.e771ebba.js",
     "static/js/11.896c0ab3.chunk.js",
-    "static/js/main.5c610d8e.chunk.js"
+    "static/js/main.660f0eac.chunk.js"
   ]
 }
