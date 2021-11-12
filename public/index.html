@@ -63,6 +63,14 @@
       crossorigin
     />
 
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@300&family=Lato:wght@300&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       /* font-face declarations for preloaded fonts */
       /* These are the only 3 fonts being used.
@@ -112,7 +120,7 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.covid19india.org" />
+    <!-- <meta property="og:url" content="https://www.covid19india.org" /> -->
     <meta
       property="og:title"
       content="Coronavirus in India: Latest Map and Case Count"
@@ -121,34 +129,180 @@
       property="og:description"
       content="A volunteer-driven crowdsourced effort to track the coronavirus in India. A detailed country map shows the extent of the coronavirus outbreak, with tables of the number of cases by state and district."
     />
-    <meta
+    <!-- <meta
       property="og:image"
       content="https://www.covid19india.org/thumbnail.png"
-    />
+    /> -->
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://www.covid19india.org" />
+    <!-- <meta property="twitter:url" content="https://www.covid19india.org" /> -->
     <meta
       property="twitter:title"
       content="Coronavirus in India: Latest Map and Case Count"
     />
-    <meta name="twitter:site" value="@covid19indiaorg" />
+    <!-- <meta name="twitter:site" value="@covid19indiaorg" /> -->
     <meta
       property="twitter:description"
       content="A volunteer-driven crowdsourced effort to track the coronavirus in India. A detailed country map shows the extent of the coronavirus outbreak, with tables of the number of cases by state and district."
     />
-    <meta
+    <!-- <meta
       property="twitter:image"
       content="https://www.covid19india.org/thumbnail.png"
-    />
+    /> -->
   </head>
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <button id="auth-button">Authorize</button>
+
+    <h1>Hello Analytics</h1>
+
+    <textarea cols="80" rows="20" id="query-output"></textarea>
+
+    <script>
+      // Replace with your client ID from the developer console.
+      var CLIENT_ID =
+        '382077106383-snet4ifo8shqjct2o092h04hg5r0p8kb.apps.googleusercontent.com';
+
+      // Set authorized scope.
+      var SCOPES = ['https://www.googleapis.com/auth/analytics.readonly'];
+
+      function authorize(event) {
+        // Handles the authorization flow.
+        // `immediate` should be false when invoked from the button click.
+        var useImmdiate = event ? false : true;
+        var authData = {
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          immediate: useImmdiate,
+        };
+        console.log(authData);
+
+        gapi.auth.authorize(authData, function (response) {
+          console.log(response, 'response');
+          var authButton = document.getElementById('auth-button');
+          if (response.error) {
+            console.log(error, 'error');
+            authButton.hidden = false;
+          } else {
+            console.log('passed1');
+            authButton.hidden = true;
+            queryAccounts();
+          }
+        });
+      }
+
+      function queryAccounts() {
+        // Load the Google Analytics client library.
+        gapi.client.load('analytics', 'v3').then(function () {
+          console.log('queryaccounts passed');
+          // Get a list of all Google Analytics accounts for this user
+          gapi.client.analytics.management.accounts.list().then(handleAccounts);
+        });
+      }
+
+      function handleAccounts(response) {
+        // Handles the response from the accounts list method.
+        if (response.result.items && response.result.items.length) {
+          // Get the first Google Analytics account.
+          var firstAccountId = response.result.items[0].id;
+          console.log(firstAccountId);
+          // Query for properties.
+          queryProperties(firstAccountId);
+        } else {
+          console.log('No accounts found for this user.');
+        }
+      }
+
+      function queryProperties(accountId) {
+        // Get a list of all the properties for the account.
+        gapi.client.analytics.management.webproperties
+          .list({accountId: accountId})
+          .then(handleProperties)
+          .then(null, function (err) {
+            // Log any errors.
+            console.log(err);
+          });
+      }
+
+      function handleProperties(response) {
+        // Handles the response from the webproperties list method.
+        if (response.result.items && response.result.items.length) {
+          // Get the first Google Analytics account
+          var firstAccountId = response.result.items[0].accountId;
+
+          // Get the first property ID
+          var firstPropertyId = response.result.items[0].id;
+          console.log(firstPropertyId);
+          // Query for Views (Profiles).
+          queryProfiles(firstAccountId, firstPropertyId);
+        } else {
+          console.log('No properties found for this user.');
+        }
+      }
+
+      function queryProfiles(accountId, propertyId) {
+        // Get a list of all Views (Profiles) for the first property
+        // of the first Account.
+        gapi.client.analytics.management.profiles
+          .list({
+            accountId: accountId,
+            webPropertyId: propertyId,
+          })
+          .then(handleProfiles)
+          .then(null, function (err) {
+            // Log any errors.
+            console.log(err);
+          });
+      }
+
+      function handleProfiles(response) {
+        // Handles the response from the profiles list method.
+        if (response.result.items && response.result.items.length) {
+          // Get the first View (Profile) ID.
+          var firstProfileId = response.result.items[0].id;
+          console.log(firstProfileId, 'firstProfileId');
+          // Query the Core Reporting API.
+          queryCoreReportingApi(firstProfileId);
+        } else {
+          console.log('No views (profiles) found for this user.');
+        }
+      }
+
+      function queryCoreReportingApi(profileId) {
+        // Query the Core Reporting API for the number sessions for
+        // the past seven days.
+        console.log(profileId, 'profileId');
+        gapi.client.analytics.data.ga
+          .get({
+            ids: 'ga:' + profileId,
+            'start-date': '7daysAgo',
+            'end-date': 'today',
+            metrics: 'ga:sessions',
+          })
+          .then(function (response) {
+            var formattedJson = JSON.stringify(response.result, null, 2);
+            console.log(formattedJson);
+            document.getElementById('query-output').value = formattedJson;
+          })
+          .then(null, function (err) {
+            // Log any errors.
+            console.log(err);
+          });
+      }
+
+      // Add an event listener to the 'auth-button'.
+      document
+        .getElementById('auth-button')
+        .addEventListener('click', authorize);
+    </script>
+
+    <script src="https://apis.google.com/js/client.js?onload=authorize"></script>
     <div id="root"></div>
   </body>
 
@@ -197,7 +351,7 @@
   </script>
 
   <!-- Google Analytics -->
-  <script>
+  <!-- <script>
     (function (i, s, o, g, r, a, m) {
       i['GoogleAnalyticsObject'] = r;
       (i[r] =
@@ -226,6 +380,20 @@
       sample_rate: 1,
     });
     ga('send', 'pageview');
+  </script> -->
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-S954351B82"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+
+    gtag('config', 'G-S954351B82');
   </script>
   <!-- End Google Analytics -->
 </html>

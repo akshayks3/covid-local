@@ -77,9 +77,9 @@ function MapVisualizer({
 
   const mapMeta = MAP_META[mapCode];
   const history = useHistory();
-
+  console.log(mapMeta.geoDataFile);
   const {data: geoData} = useSWR(
-    mapMeta.geoDataFile,
+    'https://www.covid19india.org' + mapMeta.geoDataFile,
     async (file) => {
       return await json(file);
     },
