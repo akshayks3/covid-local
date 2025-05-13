@@ -2,7 +2,7 @@
   "name": "covid19india",
   "version": "1.0.0",
   "private": true,
-  "homepage": "https://akshayks3.github.io/covid-local",
+  "homepage": "https://akshayks3.github.io/",
   "dependencies": {
     "@primer/octicons-react": "^14.2.2",
     "@react-google-maps/api": "^2.20.6",
