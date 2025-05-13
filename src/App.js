@@ -1,5 +1,5 @@
 import './App.scss';
-import Blog from './components/Blog';
+import Incidents from './components/Incidents';
 import Navbar from './components/Navbar';
 import {retry} from './utils/commonFunctions';
 
@@ -7,13 +7,12 @@ import {lazy, useState, Suspense, useEffect} from 'react';
 import {Route, Redirect, Switch, useLocation} from 'react-router-dom';
 
 const Home = lazy(() => retry(() => import('./components/Home')));
-const Volunteers = lazy(() => retry(() => import('./components/Volunteers')));
+const Feedback = lazy(() => retry(() => import('./components/Feedback')));
 const About = lazy(() => retry(() => import('./components/About')));
 const State = lazy(() => retry(() => import('./components/State')));
 const LanguageSwitcher = lazy(() =>
   retry(() => import('./components/LanguageSwitcher'))
 );
-const Banner = lazy(() => retry(() => import('./components/Banner')));
 
 const App = () => {
   const [showLanguageSwitcher, setShowLanguageSwitcher] = useState(false);
@@ -27,15 +26,15 @@ const App = () => {
       showInNavbar: true,
     },
     {
-      pageLink: '/blog',
-      view: Blog,
-      displayName: 'Blog',
+      pageLink: '/incidents',
+      view: Incidents,
+      displayName: 'Incidents',
       showInNavbar: true,
     },
     {
-      pageLink: '/volunteers',
-      view: Volunteers,
-      displayName: 'Volunteers',
+      pageLink: '/feedback',
+      view: Feedback,
+      displayName: 'Feedback',
       showInNavbar: true,
     },
     {
@@ -71,7 +70,7 @@ const App = () => {
 
       <Navbar {...{pages, showLanguageSwitcher, setShowLanguageSwitcher}} />
 
-      <Banner />
+      {/* <Banner /> */}
 
       <Suspense fallback={<div />}>
         <Switch location={location}>

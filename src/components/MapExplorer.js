@@ -1,4 +1,5 @@
 import MapVisualizerLoader from './loaders/MapVisualizer';
+import MapComponent from './MapComponent';
 import {Delta7Icon, PerLakhIcon} from './snippets/Icons';
 import StatisticDropdown from './StatisticDropdown';
 import Tooltip from './Tooltip';
@@ -14,7 +15,7 @@ import {
   STATISTIC_CONFIGS,
   UNKNOWN_DISTRICT_KEY,
 } from '../constants';
-import {formatNumber, getStatistic, retry} from '../utils/commonFunctions';
+import {formatNumber, getStatistic} from '../utils/commonFunctions';
 
 import {
   ArrowLeftIcon,
@@ -25,22 +26,14 @@ import {
 import classnames from 'classnames';
 import equal from 'fast-deep-equal';
 import produce from 'immer';
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  Suspense,
-  lazy,
-} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef, Suspense} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {animated, useSpring} from 'react-spring';
 import {useSwipeable} from 'react-swipeable';
 import {useSessionStorage, useWindowSize} from 'react-use';
 
-const MapVisualizer = lazy(() => retry(() => import('./MapVisualizer')));
+// const MapVisualizer = lazy(() => retry(() => import('./MapVisualizer')));
 
 function MapExplorer({
   stateCode: mapCode = 'TT',
@@ -69,8 +62,6 @@ function MapExplorer({
   const [delta7Mode, setDelta7Mode] = useSessionStorage('delta7ModeMap', false);
 
   const mapMeta = MAP_META[mapCode];
-  const mapData =
-    mapMeta.mapType === MAP_TYPES.COUNTRY ? data : {[mapCode]: data[mapCode]};
 
   const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
 
@@ -394,7 +385,10 @@ function MapExplorer({
               />
             }
           >
-            <MapVisualizer
+            <div>
+              <MapComponent />
+            </div>
+            {/* <MapVisualizer
               data={mapData}
               statistic={mapStatistic}
               {...{
@@ -407,7 +401,7 @@ function MapExplorer({
                 transformStatistic,
                 noDistrictData,
               }}
-            ></MapVisualizer>
+            ></MapVisualizer> */}
           </Suspense>
         )}
       </div>

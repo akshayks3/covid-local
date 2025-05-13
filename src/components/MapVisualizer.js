@@ -79,7 +79,7 @@ function MapVisualizer({
   const history = useHistory();
   console.log(mapMeta.geoDataFile);
   const {data: geoData} = useSWR(
-    'https://www.covid19india.org' + mapMeta.geoDataFile,
+    'https://www.incovid19.org' + mapMeta.geoDataFile,
     async (file) => {
       return await json(file);
     },
