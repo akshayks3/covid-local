@@ -1,8 +1,6 @@
-import Tooltip from './Tooltip';
-
 import {formatDate, retry} from '../utils/commonFunctions';
 
-import {BellIcon, BellSlashIcon, HistoryIcon} from '@primer/octicons-react';
+import {BellIcon, BellSlashIcon} from '@primer/octicons-react';
 import {useMemo, useCallback, lazy, Suspense} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -33,11 +31,6 @@ const ActionsPanel = ({
     });
     return styles;
   }, []);
-
-  const handleTimelineClick = useCallback(() => {
-    setIsTimelineMode(true);
-    if (showUpdates) setShowUpdates(!showUpdates);
-  }, [setIsTimelineMode, setShowUpdates, showUpdates]);
 
   const handleBellClick = useCallback(() => {
     if (!showUpdates) setNewUpdate(false);

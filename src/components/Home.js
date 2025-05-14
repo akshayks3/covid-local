@@ -1,4 +1,4 @@
-import TableLoader from './loaders/Table';
+import SectionWithFilter from './SectionWithFilter';
 
 import {
   API_REFRESH_INTERVAL,
@@ -14,7 +14,6 @@ import useIsVisible from '../hooks/useIsVisible';
 import useStickySWR from '../hooks/useStickySWR';
 import {
   fetcher,
-  formatDateObjIndia,
   getStatistic,
   parseIndiaDate,
   retry,
@@ -26,20 +25,10 @@ import {useMemo, useRef, useState, lazy, Suspense} from 'react';
 import {Helmet} from 'react-helmet';
 import {useLocation} from 'react-router-dom';
 import {useLocalStorage, useSessionStorage, useWindowSize} from 'react-use';
-import SectionWithFilter from './SectionWithFilter';
 
-const Actions = lazy(() => retry(() => import('./Actions')));
 const Footer = lazy(() => retry(() => import('./Footer')));
-const Level = lazy(() => retry(() => import('./Level')));
-const VaccinationHeader = lazy(() =>
-  retry(() => import('./VaccinationHeader'))
-);
 const MapExplorer = lazy(() => retry(() => import('./MapExplorer')));
-const MapSwitcher = lazy(() => retry(() => import('./MapSwitcher')));
-const Minigraphs = lazy(() => retry(() => import('./Minigraphs')));
-const Search = lazy(() => retry(() => import('./Search')));
 const StateHeader = lazy(() => retry(() => import('./StateHeader')));
-const Table = lazy(() => retry(() => import('./Table')));
 const TimeseriesExplorer = lazy(() =>
   retry(() => import('./TimeseriesExplorer'))
 );
@@ -51,14 +40,14 @@ function Home() {
   });
 
   const [anchor, setAnchor] = useLocalStorage('anchor', null);
-  const [expandTable, setExpandTable] = useLocalStorage('expandTable', false);
+  const [expandTable] = useLocalStorage('expandTable', false);
   const [mapStatistic, setMapStatistic] = useSessionStorage(
     'mapStatistic',
     'active'
   );
   const [mapView, setMapView] = useLocalStorage('mapView', MAP_VIEWS.DISTRICTS);
 
-  const [date, setDate] = useState('');
+  const [date] = useState('');
   const location = useLocation();
 
   const {data: timeseries} = useStickySWR(
@@ -83,11 +72,6 @@ function Home() {
   const isVisible = useIsVisible(homeRightElement);
   const {width} = useWindowSize();
 
-  const [category, setCategory] = useState('');
-  const [severity, setSeverity] = useState('');
-  const [dateRange, setDateRange] = useState('1 Day');
-  const [selectedHotel, setSelectedHotel] = useState('');
-
   const hideDistrictData = date !== '' && date < DISTRICT_START_DATE;
   const hideDistrictTestData =
     date === '' ||
@@ -110,17 +94,6 @@ function Home() {
       ? formatISO(max(updatedDates.map((date) => parseIndiaDate(date))), {
           representation: 'date',
         })
-      : null;
-  }, [data]);
-
-  const lastUpdatedDate = useMemo(() => {
-    const updatedDates = Object.keys(data || {})
-      .map((stateCode) => data?.[stateCode]?.meta?.['last_updated'])
-      .filter((datetime) => datetime);
-    return updatedDates.length > 0
-      ? formatDateObjIndia(
-          max(updatedDates.map((datetime) => parseIndiaDate(datetime)))
-        )
       : null;
   }, [data]);
 

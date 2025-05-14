@@ -1,5 +1,6 @@
-import React from 'react';
 import FilterSection from './FilterSection';
+
+import React from 'react';
 
 const SectionWithFilter = ({title, hotels, onFilterChange}) => (
   <div

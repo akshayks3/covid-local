@@ -2,16 +2,13 @@ import {
   API_DOMAIN,
   STATE_CODES_ARRAY,
   STATE_CODES,
-  STATE_NAMES,
   UNASSIGNED_STATE_CODE,
   UNKNOWN_DISTRICT_KEY,
 } from '../constants';
 
 import produce from 'immer';
 import {memo, useState, useEffect, useMemo, useCallback, useRef} from 'react';
-import * as Icon from 'react-feather';
 import {useTranslation} from 'react-i18next';
-import {Link} from 'react-router-dom';
 import {useDebounce, useKeyPressEvent, useUpdateEffect} from 'react-use';
 
 const suggestions = [
