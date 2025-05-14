@@ -71,90 +71,103 @@ const FilterSection = ({onFilterChange}) => {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '1.5rem',
-        padding: '1rem',
-        background: '#111827',
-        borderRadius: '10px',
-        flexWrap: 'wrap',
-        border: '1px solid #2a2f45',
-      }}
-    >
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <label style={labelStyle}>Category</label>
-        <select
-          style={selectStyle}
-          value={category}
-          onChange={(e) => {
-            setCategory(e.target.value);
-            handleChange();
-          }}
-        >
-          <option value="">Category 1</option>
-          <option value="Low">Category 2</option>
-          <option value="Moderate">Category 3</option>
-          <option value="High">Category 4</option>
-          <option value="Critical">Category 5</option>
-        </select>
+    <>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1.5rem',
+          padding: '1rem',
+          background: '#111827',
+          borderRadius: '10px',
+          flexWrap: 'wrap',
+          border: '1px solid #2a2f45',
+        }}
+      >
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>Category</label>
+          <select
+            style={selectStyle}
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="">Category 1</option>
+            <option value="Low">Category 2</option>
+            <option value="Moderate">Category 3</option>
+            <option value="High">Category 4</option>
+            <option value="Critical">Category 5</option>
+          </select>
+        </div>
+        {/* Severity Dropdown */}
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>Severity</label>
+          <select
+            style={selectStyle}
+            value={severity}
+            onChange={(e) => {
+              setSeverity(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="">All</option>
+            <option value="Low">Low</option>
+            <option value="Moderate">Moderate</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </div>
       </div>
-      {/* Severity Dropdown */}
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <label style={labelStyle}>Severity</label>
-        <select
-          style={selectStyle}
-          value={severity}
-          onChange={(e) => {
-            setSeverity(e.target.value);
-            handleChange();
-          }}
-        >
-          <option value="">All</option>
-          <option value="Low">Low</option>
-          <option value="Moderate">Moderate</option>
-          <option value="High">High</option>
-          <option value="Critical">Critical</option>
-        </select>
-      </div>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1.5rem',
+          padding: '1rem',
+          background: '#111827',
+          borderRadius: '10px',
+          flexWrap: 'wrap',
+          border: '1px solid #2a2f45',
+        }}
+      >
+        {/* Date Range Dropdown */}
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>Date Range</label>
+          <select
+            style={selectStyle}
+            value={dateRange}
+            onChange={(e) => {
+              setDateRange(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="1 Day">1 Day</option>
+            <option value="1 Week">1 Week</option>
+            <option value="1 Month">1 Month</option>
+          </select>
+        </div>
 
-      {/* Date Range Dropdown */}
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <label style={labelStyle}>Date Range</label>
-        <select
-          style={selectStyle}
-          value={dateRange}
-          onChange={(e) => {
-            setDateRange(e.target.value);
-            handleChange();
-          }}
-        >
-          <option value="1 Day">1 Day</option>
-          <option value="1 Week">1 Week</option>
-          <option value="1 Month">1 Month</option>
-        </select>
+        {/* Hotel Dropdown */}
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>Hotel</label>
+          <select
+            style={selectStyle}
+            value={selectedHotel}
+            onChange={(e) => {
+              setSelectedHotel(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="">All Hotels</option>
+            {hotelLocations.map((hotel) => (
+              <option key={hotel.id} value={hotel.id}>
+                {hotel.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-
-      {/* Hotel Dropdown */}
-      <div style={{display: 'flex', flexDirection: 'column'}}>
-        <label style={labelStyle}>Hotel</label>
-        <select
-          style={selectStyle}
-          value={selectedHotel}
-          onChange={(e) => {
-            setSelectedHotel(e.target.value);
-            handleChange();
-          }}
-        >
-          <option value="">All Hotels</option>
-          {hotelLocations.map((hotel) => (
-            <option key={hotel.id} value={hotel.id}>
-              {hotel.name}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+    </>
   );
 };
 
