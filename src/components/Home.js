@@ -26,6 +26,7 @@ import {useMemo, useRef, useState, lazy, Suspense} from 'react';
 import {Helmet} from 'react-helmet';
 import {useLocation} from 'react-router-dom';
 import {useLocalStorage, useSessionStorage, useWindowSize} from 'react-use';
+import SectionWithFilter from './SectionWithFilter';
 
 const Actions = lazy(() => retry(() => import('./Actions')));
 const Footer = lazy(() => retry(() => import('./Footer')));
@@ -81,6 +82,11 @@ function Home() {
   const homeRightElement = useRef();
   const isVisible = useIsVisible(homeRightElement);
   const {width} = useWindowSize();
+
+  const [category, setCategory] = useState('');
+  const [severity, setSeverity] = useState('');
+  const [dateRange, setDateRange] = useState('1 Day');
+  const [selectedHotel, setSelectedHotel] = useState('');
 
   const hideDistrictData = date !== '' && date < DISTRICT_START_DATE;
   const hideDistrictTestData =
@@ -146,6 +152,13 @@ function Home() {
     regionHighlighted.districtName !== UNKNOWN_DISTRICT_KEY &&
     noDistrictDataStates[regionHighlighted.stateCode];
 
+  const handleFilterChange = (category, severity, dateRange, selectedHotel) => {
+    setCategory(category);
+    setSeverity(severity);
+    setDateRange(dateRange);
+    setSelectedHotel(selectedHotel);
+  };
+
   return (
     <>
       <Helmet>
@@ -157,7 +170,18 @@ function Home() {
       </Helmet>
 
       <div className="Home">
-        <div className={classnames('home-left', {expanded: expandTable})}>
+        <div
+          style={{padding: '2rem', background: '#0a0e1a', minHeight: '100vh'}}
+        >
+          <SectionWithFilter
+            title="Incidents"
+            onFilterChange={(filters) =>
+              handleFilterChange('Incidents', filters)
+            }
+          />
+        </div>
+        {/* <FilterSection onFilterChange={onFilterChange} /> */}
+        {/* <div className={classnames('home-left', {expanded: expandTable})}>
           <div className="header">
             <Suspense fallback={<div />}>
               <Search />
@@ -225,7 +249,37 @@ function Home() {
               />
             </Suspense>
           )}
-        </div>
+        </div> */}
+
+        {/* <div className="state-selection">
+          <div className="dropdown">
+            <select
+              value={JSON.stringify(selectedRegion)}
+              onChange={handleChange}
+            >
+              {dropdownRegions
+                .filter(
+                  (region) =>
+                    STATE_NAMES[region.stateCode] !== region.districtName
+                )
+                .map((region) => {
+                  return (
+                    <option
+                      value={JSON.stringify(region)}
+                      key={`${region.stateCode}-${region.districtName}`}
+                    >
+                      {region.districtName
+                        ? t(region.districtName)
+                        : t(STATE_NAMES[region.stateCode])}
+                    </option>
+                  );
+                })}
+            </select>
+          </div>
+          <div className="reset-icon" onClick={resetDropdown}>
+            <ReplyIcon />
+          </div>
+        </div> */}
 
         <div
           className={classnames('home-right', {expanded: expandTable})}

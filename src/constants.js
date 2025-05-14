@@ -174,6 +174,10 @@ export const PRIMARY_STATISTICS = [
 
 export const LEVEL_STATISTICS = [...PRIMARY_STATISTICS];
 
+export const SEVERITY_LEVELS = ['Critical', 'High', 'Medium', 'Low'];
+
+export const SEVERITY_LEVEL_STATISTICS = [...SEVERITY_LEVELS];
+
 export const TABLE_STATISTICS = [...PRIMARY_STATISTICS, 'tested', 'vaccinated'];
 
 export const TABLE_STATISTICS_EXPANDED = Object.keys(STATISTIC_CONFIGS).filter(

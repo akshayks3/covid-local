@@ -59,7 +59,7 @@ function Navbar({pages, showLanguageSwitcher, setShowLanguageSwitcher}) {
 
       <div className="navbar-middle">
         <Link to="/" onClick={setExpand.bind(this, false)}>
-          Covid19<span>India</span>
+          Sentimentally<span> Yours</span>
         </Link>
       </div>
 
@@ -96,9 +96,9 @@ function Navbar({pages, showLanguageSwitcher, setShowLanguageSwitcher}) {
                 <HelpCircle {...activeNavIcon('/about')} />
               </span>
             </Link>
-            <span>
-              <SunMoon {...{darkMode}} />
-            </span>
+            {/* <span> */}
+            {/* <SunMoon {...{darkMode}} />
+            </span> */}
           </>
         )}
       </div>
@@ -147,10 +147,6 @@ function Expand({pages, setExpand, darkMode, windowSize}) {
       })}
 
       {windowSize.width < 769 && <SunMoon {...{darkMode}} />}
-
-      <div className="expand-bottom">
-        <h5>{t('A crowdsourced initiative.')}</h5>
-      </div>
     </div>
   );
 }

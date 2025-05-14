@@ -24,7 +24,7 @@ function PureLevelItem({statistic, total, delta}) {
 
   return (
     <>
-      <h5>{t(capitalize(statisticConfig.displayName))}</h5>
+      <h5>{t(capitalize(statisticConfig?.displayName))}</h5>
       <animated.h4>
         {statistic !== 'active' ? (
           delta > 0 ? (

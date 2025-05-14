@@ -70,7 +70,7 @@ const ActionsPanel = ({
           {newUpdate && <div className="indicator"></div>}
         </div>
 
-        <Tooltip message={'Timeline'} hold>
+        {/* <Tooltip message={'Timeline'} hold>
           <div
             className="timeline-icon fadeInUp"
             onClick={handleTimelineClick}
@@ -78,7 +78,7 @@ const ActionsPanel = ({
           >
             {<HistoryIcon />}
           </div>
-        </Tooltip>
+        </Tooltip> */}
       </div>
 
       {isTimelineMode && (
