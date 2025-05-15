@@ -4,9 +4,8 @@ import {
   SLIDE_IN_MOBILE,
   SLIDE_OUT_MOBILE,
 } from '../animations';
-import locales from '../i18n/locales.json';
 
-import {useState, useCallback, useRef} from 'react';
+import {useState, useCallback, useRef, useEffect} from 'react';
 import {Book, HelpCircle, Home, Moon, Sun, Users} from 'react-feather';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
@@ -14,14 +13,17 @@ import {useTransition, animated} from 'react-spring';
 import {useLockBodyScroll, usePageLeave, useWindowSize} from 'react-use';
 import useDarkMode from 'use-dark-mode';
 
-function Navbar({pages, showLanguageSwitcher, setShowLanguageSwitcher}) {
-  const {i18n, t} = useTranslation();
-  const currentLanguage = Object.keys(locales).includes(i18n?.language)
-    ? i18n?.language
-    : i18n?.options?.fallbackLng[0];
+function Navbar({pages, setUser, user}) {
+  const {t} = useTranslation();
 
   const [expand, setExpand] = useState(false);
-  const darkMode = useDarkMode(false);
+  const darkMode = useDarkMode(true);
+
+  useEffect(() => {
+    if (darkMode.value === false) {
+      darkMode.toggle();
+    }
+  }, [darkMode]);
 
   useLockBodyScroll(expand);
   const windowSize = useWindowSize();
@@ -46,15 +48,20 @@ function Navbar({pages, showLanguageSwitcher, setShowLanguageSwitcher}) {
     }
   }, [windowSize.width]);
 
-  const handleLanguageSwitcher = useCallback(() => {
-    if (expand) setExpand(false);
-    setShowLanguageSwitcher(!showLanguageSwitcher);
-  }, [expand, showLanguageSwitcher, setExpand, setShowLanguageSwitcher]);
+  const handleLogout = () => {
+    setUser((st) => ({
+      ...st,
+      userName: '',
+      loggedIn: false,
+      userRole: '',
+    }));
+    sessionStorage.clear('user');
+  };
 
   return navbarTransition((style, item) => (
     <animated.div className="Navbar" {...{style}}>
-      <div className="navbar-left" onClick={handleLanguageSwitcher}>
-        {locales[currentLanguage]}
+      <div className="navbar-left" onClick={handleLogout}>
+        Logout
       </div>
 
       <div className="navbar-middle">
@@ -76,11 +83,13 @@ function Navbar({pages, showLanguageSwitcher, setShowLanguageSwitcher}) {
 
         {windowSize.width >= 769 && (
           <>
-            <Link to="/">
-              <span>
-                <Home {...activeNavIcon('/')} />
-              </span>
-            </Link>
+            {user?.userRole === 'SA' && (
+              <Link to="/">
+                <span>
+                  <Home {...activeNavIcon('/')} />
+                </span>
+              </Link>
+            )}
             <Link to="/incidents">
               <span>
                 <Book {...activeNavIcon('/incidents')} />

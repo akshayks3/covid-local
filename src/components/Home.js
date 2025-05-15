@@ -1,4 +1,6 @@
 import SectionWithFilter from './SectionWithFilter';
+import Summary from './Summary';
+import SummaryDescription from './SummaryDescription';
 
 import {
   API_REFRESH_INTERVAL,
@@ -126,10 +128,10 @@ function Home() {
     noDistrictDataStates[regionHighlighted.stateCode];
 
   const handleFilterChange = (category, severity, dateRange, selectedHotel) => {
-    setCategory(category);
-    setSeverity(severity);
-    setDateRange(dateRange);
-    setSelectedHotel(selectedHotel);
+    // setCategory(category);
+    // setSeverity(severity);
+    // setDateRange(dateRange);
+    // setSelectedHotel(selectedHotel);
   };
 
   return (
@@ -143,15 +145,23 @@ function Home() {
       </Helmet>
 
       <div className="Home">
-        <div
-          style={{padding: '2rem', background: '#0a0e1a', minHeight: '100vh'}}
-        >
+        <div style={{minHeight: '100vh'}}>
           <SectionWithFilter
-            title="Incidents"
+            title="Filters"
             onFilterChange={(filters) =>
-              handleFilterChange('Incidents', filters)
+              handleFilterChange('Feedback', filters)
             }
           />
+          <Summary />
+          <div
+            style={{
+              maxWidth: '620px',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
+            <SummaryDescription />
+          </div>
         </div>
         {/* <FilterSection onFilterChange={onFilterChange} /> */}
         {/* <div className={classnames('home-left', {expanded: expandTable})}>

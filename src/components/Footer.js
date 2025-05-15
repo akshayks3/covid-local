@@ -16,7 +16,7 @@ function Footer() {
         </a>
       </div>
 
-      <h5>{t('Data on doorsteps')}</h5>
+      <h5>{t('Information delivered')}</h5>
       {/* 
       <div className="links">
         <a

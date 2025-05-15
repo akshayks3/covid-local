@@ -130,7 +130,6 @@ const FilterSection = ({onFilterChange}) => {
           border: '1px solid #2a2f45',
         }}
       >
-        {/* Date Range Dropdown */}
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <label style={labelStyle}>Date Range</label>
           <select
@@ -144,6 +143,55 @@ const FilterSection = ({onFilterChange}) => {
             <option value="1 Day">1 Day</option>
             <option value="1 Week">1 Week</option>
             <option value="1 Month">1 Month</option>
+          </select>
+        </div>
+
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>Brands</label>
+          <select
+            style={selectStyle}
+            value={severity}
+            onChange={(e) => {
+              setSeverity(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="">All</option>
+            <option value="Low">Marriott</option>
+            <option value="Moderate">JW Marriott</option>
+            <option value="High">WestIn</option>
+            <option value="Critical">Sheraton</option>
+          </select>
+        </div>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1.5rem',
+          padding: '1rem',
+          background: '#111827',
+          borderRadius: '10px',
+          flexWrap: 'wrap',
+          border: '1px solid #2a2f45',
+        }}
+      >
+        {/* Date Range Dropdown */}
+
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+          <label style={labelStyle}>State</label>
+          <select
+            style={selectStyle}
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              handleChange();
+            }}
+          >
+            <option value="">All</option>
+            <option value="Low">Atlanta</option>
+            <option value="Moderate">Miami</option>
+            <option value="High">California</option>
+            <option value="Critical">Georgia</option>
           </select>
         </div>
 
@@ -166,6 +214,11 @@ const FilterSection = ({onFilterChange}) => {
             ))}
           </select>
         </div>
+      </div>
+      <div style={{textAlign: 'center'}}>
+        <button type="submit" className="small-submit-btn">
+          Submit
+        </button>
       </div>
     </>
   );

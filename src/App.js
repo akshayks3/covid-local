@@ -1,5 +1,6 @@
 import './App.scss';
 import Incidents from './components/Incidents';
+import LoginPage from './components/Login';
 import Navbar from './components/Navbar';
 import {retry} from './utils/commonFunctions';
 
@@ -17,13 +18,29 @@ const LanguageSwitcher = lazy(() =>
 const App = () => {
   const [showLanguageSwitcher, setShowLanguageSwitcher] = useState(false);
   const location = useLocation();
+  const [user, setUser] = useState({
+    userName: '',
+    loggedIn: false,
+    userRole: '',
+  });
+
+  useEffect(() => {
+    const user = JSON.parse(sessionStorage.getItem('user'));
+    if (user) {
+      setUser({
+        userName: user.userName,
+        loggedIn: true,
+        userRole: user.userRole,
+      });
+    }
+  }, []);
 
   const pages = [
     {
       pageLink: '/',
       view: Home,
       displayName: 'Home',
-      showInNavbar: true,
+      showInNavbar: user?.userRole === 'SA',
     },
     {
       pageLink: '/incidents',
@@ -62,31 +79,48 @@ const App = () => {
 
   return (
     <div className="App">
-      <Suspense fallback={<div />}>
-        <LanguageSwitcher
-          {...{showLanguageSwitcher, setShowLanguageSwitcher}}
-        />
-      </Suspense>
+      {user.userRole && (
+        <>
+          <Suspense fallback={<div />}>
+            <LanguageSwitcher
+              {...{showLanguageSwitcher, setShowLanguageSwitcher}}
+            />
+          </Suspense>
 
-      <Navbar {...{pages, showLanguageSwitcher, setShowLanguageSwitcher}} />
+          <Navbar
+            {...{
+              pages,
+              showLanguageSwitcher,
+              setShowLanguageSwitcher,
+              setUser,
+              user,
+            }}
+          />
 
-      {/* <Banner /> */}
+          {/* <Banner /> */}
 
-      <Suspense fallback={<div />}>
-        <Switch location={location}>
-          {pages.map((page, index) => {
-            return (
-              <Route
-                exact
-                path={page.pageLink}
-                render={({match}) => <page.view />}
-                key={index}
-              />
-            );
-          })}
-          <Redirect to="/" />
-        </Switch>
-      </Suspense>
+          <Suspense fallback={<div />}>
+            <Switch location={location}>
+              {pages
+                .filter((page) => {
+                  return page.showInNavbar;
+                })
+                .map((page, index) => {
+                  return (
+                    <Route
+                      exact
+                      path={page.pageLink}
+                      render={({match}) => <page.view />}
+                      key={index}
+                    />
+                  );
+                })}
+              <Redirect to="/" />
+            </Switch>
+          </Suspense>
+        </>
+      )}
+      {!user.userRole && <LoginPage setUser={setUser} />}
     </div>
   );
 };
