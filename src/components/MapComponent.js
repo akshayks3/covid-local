@@ -1,10 +1,13 @@
+import {useFilterContext} from '../contexts/filterContext';
+import {PropertyData} from '../utils/commonFunctions';
+
 import {
   GoogleMap,
   Marker,
   OverlayView,
   useJsApiLoader,
 } from '@react-google-maps/api';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
 const containerStyle = {
   width: '100%',
@@ -50,69 +53,92 @@ const center = {
 
 const hotelIcon = 'https://cdn-icons-png.flaticon.com/512/235/235889.png';
 
-const hotelLocations = [
-  {
-    id: 1,
-    name: 'Hotel NYC',
-    lat: 40.7128,
-    lng: -74.006,
-    summary: 'Luxury hotel in New York City.',
-  },
-  {
-    id: 2,
-    name: 'Hotel LA',
-    lat: 34.0522,
-    lng: -118.2437,
-    summary: 'Modern hotel in Los Angeles.',
-  },
-  {
-    id: 3,
-    name: 'Hotel Chicago',
-    lat: 41.8781,
-    lng: -87.6298,
-    summary: 'Comfortable hotel in Chicago.',
-  },
-  {
-    id: 4,
-    name: 'Hotel Miami',
-    lat: 25.7617,
-    lng: -80.1918,
-    summary: 'Beachfront hotel in Miami.',
-  },
-  {
-    id: 5,
-    name: 'Hotel Seattle',
-    lat: 47.6062,
-    lng: -122.3321,
-    summary: 'Downtown hotel in Seattle.',
-  },
-];
+// const hotelLocations = [
+//   {
+//     id: 1,
+//     name: 'Hotel NYC',
+//     lat: 40.7128,
+//     lng: -74.006,
+//     summary: 'Luxury hotel in New York City.',
+//   },
+//   {
+//     id: 2,
+//     name: 'Hotel LA',
+//     lat: 34.0522,
+//     lng: -118.2437,
+//     summary: 'Modern hotel in Los Angeles.',
+//   },
+//   {
+//     id: 3,
+//     name: 'Hotel Chicago',
+//     lat: 41.8781,
+//     lng: -87.6298,
+//     summary: 'Comfortable hotel in Chicago.',
+//   },
+//   {
+//     id: 4,
+//     name: 'Hotel Miami',
+//     lat: 25.7617,
+//     lng: -80.1918,
+//     summary: 'Beachfront hotel in Miami.',
+//   },
+//   {
+//     id: 5,
+//     name: 'Hotel Seattle',
+//     lat: 47.6062,
+//     lng: -122.3321,
+//     summary: 'Downtown hotel in Seattle.',
+//   },
+// ];
 
-const MapComponent = () => {
+const MapComponent = ({properties}) => {
   const {isLoaded} = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: 'AIzaSyCmFUNpUaU8BdgqLAq0_EKXfroXHh_mMD8',
   });
   const [hoveredHotelId, setHoveredHotelId] = useState();
+  const [zoom, setZoom] = useState(4);
+  const [mapCenter, setMapCenter] = useState(center);
+  const {filters} = useFilterContext();
   const getPixelPositionOffset = () => ({
     x: 0,
     y: -40, // lift it above the marker
   });
 
+  useEffect(() => {
+    console.log('this is the hotel filter', filters);
+    if (filters.hotel) {
+      setZoom(6);
+      const property = PropertyData.find(
+        (property) => property.name === filters.hotel
+      );
+      setMapCenter({
+        lat: +property?.coordinates?.split(',')?.[0] || center.lat,
+        lng: +property?.coordinates?.split(',')?.[1] || center.lng,
+      }); // NYC
+      setTimeout(() => {
+        setZoom(14);
+      }, 1000);
+    }
+  }, [filters]);
+
   return isLoaded ? (
     <GoogleMap
       mapContainerStyle={containerStyle}
-      center={center}
-      zoom={5}
+      center={mapCenter}
+      zoom={zoom}
       options={{
         styles: darkMapStyle,
         disableDefaultUI: true,
       }}
     >
-      {hotelLocations.map((hotel) => (
+      {properties.map((hotel) => (
         <React.Fragment key={hotel.id}>
           <Marker
-            position={{lat: hotel.lat, lng: hotel.lng}}
+            position={{
+              lat: +hotel.coordinates.split(',')[0],
+              lng: +hotel.coordinates.split(',')[1],
+            }}
             icon={{
               url: hotelIcon,
               scaledSize: new window.google.maps.Size(40, 40),
@@ -123,7 +149,10 @@ const MapComponent = () => {
 
           {hoveredHotelId === hotel.id && (
             <OverlayView
-              position={{lat: hotel.lat, lng: hotel.lng}}
+              position={{
+                lat: +hotel.coordinates.split(',')[0],
+                lng: +hotel.coordinates.split(',')[1],
+              }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
               getPixelPositionOffset={getPixelPositionOffset}
             >
@@ -150,7 +179,7 @@ const MapComponent = () => {
                   }}
                 >
                   <img
-                    src="https://cache.marriott.com/content/dam/marriott-renditions/HYDMC/hydmc-exterior-9852-hor-wide.jpg?output-quality=70&interpolation=progressive-bilinear&downsize=1336px:*"
+                    src={hotel.imageUrl}
                     alt="hotel"
                     style={{
                       width: '100%',
@@ -165,11 +194,13 @@ const MapComponent = () => {
                 <strong style={{fontSize: '16px', marginBottom: '4px'}}>
                   {hotel.name}
                 </strong>
-                <p style={{margin: 0, fontSize: '14px'}}>{hotel.summary}</p>
+                <p style={{margin: 0, fontSize: '14px'}}>
+                  {hotel.feedbackSummary}
+                </p>
                 <strong
                   style={{marginTop: '6px', fontSize: '13px', fontWeight: 500}}
                 >
-                  This is the summary 123 for hotel 234, feedback ********
+                  Ratings : {hotel.feedbackRating}
                 </strong>
               </div>
             </OverlayView>

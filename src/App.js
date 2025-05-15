@@ -2,6 +2,7 @@ import './App.scss';
 import Incidents from './components/Incidents';
 import LoginPage from './components/Login';
 import Navbar from './components/Navbar';
+import {FilterProvider} from './contexts/filterContext';
 import {retry} from './utils/commonFunctions';
 
 import {lazy, useState, Suspense, useEffect} from 'react';
@@ -40,7 +41,7 @@ const App = () => {
       pageLink: '/',
       view: Home,
       displayName: 'Home',
-      showInNavbar: user?.userRole === 'SA',
+      showInNavbar: true,
     },
     {
       pageLink: '/incidents',
@@ -98,26 +99,27 @@ const App = () => {
           />
 
           {/* <Banner /> */}
-
-          <Suspense fallback={<div />}>
-            <Switch location={location}>
-              {pages
-                .filter((page) => {
-                  return page.showInNavbar;
-                })
-                .map((page, index) => {
-                  return (
-                    <Route
-                      exact
-                      path={page.pageLink}
-                      render={({match}) => <page.view />}
-                      key={index}
-                    />
-                  );
-                })}
-              <Redirect to="/" />
-            </Switch>
-          </Suspense>
+          <FilterProvider>
+            <Suspense fallback={<div />}>
+              <Switch location={location}>
+                {pages
+                  .filter((page) => {
+                    return page.showInNavbar;
+                  })
+                  .map((page, index) => {
+                    return (
+                      <Route
+                        exact
+                        path={page.pageLink}
+                        render={({match}) => <page.view />}
+                        key={index}
+                      />
+                    );
+                  })}
+                <Redirect to="/" />
+              </Switch>
+            </Suspense>
+          </FilterProvider>
         </>
       )}
       {!user.userRole && <LoginPage setUser={setUser} />}

@@ -2,7 +2,7 @@ import FilterSection from './FilterSection';
 
 import React from 'react';
 
-const SectionWithFilter = ({title, hotels, onFilterChange}) => (
+const SectionWithFilter = ({title, onFilterChange}) => (
   <div
     style={{
       marginBottom: '2rem',

@@ -6,7 +6,7 @@ import {
 } from '../animations';
 
 import {useState, useCallback, useRef, useEffect} from 'react';
-import {Book, HelpCircle, Home, Moon, Sun, Users} from 'react-feather';
+import {Home, Moon, Sun} from 'react-feather';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
 import {useTransition, animated} from 'react-spring';
@@ -83,19 +83,17 @@ function Navbar({pages, setUser, user}) {
 
         {windowSize.width >= 769 && (
           <>
-            {user?.userRole === 'SA' && (
-              <Link to="/">
-                <span>
-                  <Home {...activeNavIcon('/')} />
-                </span>
-              </Link>
-            )}
-            <Link to="/incidents">
+            <Link to="/">
+              <span>
+                <Home {...activeNavIcon('/')} />
+              </span>
+            </Link>
+            {/* <Link to="/incidents">
               <span>
                 <Book {...activeNavIcon('/incidents')} />
               </span>
-            </Link>
-            <Link to="/feedback">
+            </Link> */}
+            {/* <Link to="/feedback">
               <span>
                 <Users {...activeNavIcon('/feedback')} />
               </span>
@@ -104,7 +102,7 @@ function Navbar({pages, setUser, user}) {
               <span>
                 <HelpCircle {...activeNavIcon('/about')} />
               </span>
-            </Link>
+            </Link> */}
             {/* <span> */}
             {/* <SunMoon {...{darkMode}} />
             </span> */}
@@ -135,24 +133,21 @@ function Expand({pages, setExpand, darkMode, windowSize}) {
   return (
     <div className="expand" ref={expandElement} onMouseLeave={handleMouseLeave}>
       {pages.map((page, i) => {
-        if (page.showInNavbar === true) {
-          return (
-            <Link
-              to={page.pageLink}
-              key={i}
-              {...(windowSize.width < 769 && {
-                onClick: setExpand.bind(this, false),
-              })}
+        return (
+          <Link
+            to={page.pageLink}
+            key={i}
+            {...(windowSize.width < 769 && {
+              onClick: setExpand.bind(this, false),
+            })}
+          >
+            <span
+              {...navLinkProps(page.pageLink, page.animationDelayForNavbar)}
             >
-              <span
-                {...navLinkProps(page.pageLink, page.animationDelayForNavbar)}
-              >
-                {t(page.displayName)}
-              </span>
-            </Link>
-          );
-        }
-        return null;
+              {t(page.displayName)}
+            </span>
+          </Link>
+        );
       })}
 
       {windowSize.width < 769 && <SunMoon {...{darkMode}} />}

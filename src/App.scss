@@ -6053,3 +6053,69 @@ footer {
     word-break: break-word; // Optional fallback
   }
 }
+
+.dropdown-search {
+  position: relative;
+  width: 94%;
+  // max-width: 500px;
+
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+
+  .search-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 1rem;
+    padding: 0.5rem;
+
+    &::placeholder {
+      color: #aaa;
+      font-style: italic;
+    }
+  }
+
+  .search-button {
+    background: #1f6feb;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+
+    &:hover {
+      background: #388eff;
+    }
+  }
+
+  .suggestion-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #1c1c2b;
+    border-radius: 0 0 0.5rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+
+    li {
+      padding: 0.5rem 1rem;
+      color: #fff;
+      cursor: pointer;
+
+      &:hover {
+        background-color: #2a2a3f;
+      }
+    }
+  }
+}

@@ -1,35 +1,15 @@
+import {DropdownSearch} from './DropdownSearch';
 import MapVisualizerLoader from './loaders/MapVisualizer';
 import MapComponent from './MapComponent';
-import {Delta7Icon, PerLakhIcon} from './snippets/Icons';
-import StatisticDropdown from './StatisticDropdown';
-import Tooltip from './Tooltip';
 
-import {
-  MAP_META,
-  MAP_TYPES,
-  MAP_VIEWS,
-  MAP_VIZS,
-  MAP_STATISTICS,
-  SPRING_CONFIG_NUMBERS,
-  STATE_NAMES,
-  STATISTIC_CONFIGS,
-  UNKNOWN_DISTRICT_KEY,
-} from '../constants';
-import {formatNumber, getStatistic} from '../utils/commonFunctions';
+import {MAP_STATISTICS, STATE_NAMES, STATISTIC_CONFIGS} from '../constants';
+import {getStatistic, PropertyData} from '../utils/commonFunctions';
 
-import {
-  ArrowLeftIcon,
-  DotFillIcon,
-  PinIcon,
-  OrganizationIcon,
-} from '@primer/octicons-react';
 import classnames from 'classnames';
 import equal from 'fast-deep-equal';
 import produce from 'immer';
 import {memo, useCallback, useEffect, useMemo, useRef, Suspense} from 'react';
-import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {animated, useSpring} from 'react-spring';
 import {useSwipeable} from 'react-swipeable';
 import {useSessionStorage, useWindowSize} from 'react-use';
 
@@ -38,38 +18,29 @@ import {useSessionStorage, useWindowSize} from 'react-use';
 function MapExplorer({
   stateCode: mapCode = 'TT',
   data,
-  mapView = MAP_VIEWS.DISTRICTS,
-  setMapView,
   mapStatistic,
   setMapStatistic,
   regionHighlighted,
-  setRegionHighlighted,
-  noRegionHighlightedDistrictData,
   anchor,
-  setAnchor,
   expandTable = false,
   lastDataDate,
-  hideDistrictData = false,
-  hideDistrictTestData = true,
   hideVaccinated = false,
-  noDistrictData = false,
 }) {
-  const {t} = useTranslation();
+  // const {t} = useTranslation();
   const mapExplorerRef = useRef();
   const {width} = useWindowSize();
+  const user = JSON.parse(localStorage.getItem('user'));
+  const [isPerLakh] = useSessionStorage('isPerLakhMap', false);
+  const [delta7Mode] = useSessionStorage('delta7ModeMap', false);
+  // const mapMeta = MAP_META[mapCode];
 
-  const [isPerLakh, setIsPerLakh] = useSessionStorage('isPerLakhMap', false);
-  const [delta7Mode, setDelta7Mode] = useSessionStorage('delta7ModeMap', false);
+  // const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
 
-  const mapMeta = MAP_META[mapCode];
-
-  const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
-
-  const isDistrictView =
-    mapView === MAP_VIEWS.DISTRICTS &&
-    (mapMeta.mapType === MAP_TYPES.STATE ||
-      (!hideDistrictData &&
-        !(hideDistrictTestData && statisticConfig?.category === 'tested')));
+  // const isDistrictView =
+  //   mapView === MAP_VIEWS.DISTRICTS &&
+  //   (mapMeta.mapType === MAP_TYPES.STATE ||
+  //     (!hideDistrictData &&
+  //       !(hideDistrictTestData && statisticConfig?.category === 'tested')));
 
   const hoveredRegion = useMemo(() => {
     const hoveredData =
@@ -86,25 +57,25 @@ function MapExplorer({
     });
   }, [data, regionHighlighted.stateCode, regionHighlighted.districtName]);
 
-  const handlePerLakhClick = useCallback(() => {
-    const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
-    if (statisticConfig?.nonLinear || mapStatistic === 'population') {
-      return;
-    }
-    setIsPerLakh((isPerLakh) => !isPerLakh);
-  }, [mapStatistic, setIsPerLakh]);
+  // const handlePerLakhClick = useCallback(() => {
+  //   const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
+  //   if (statisticConfig?.nonLinear || mapStatistic === 'population') {
+  //     return;
+  //   }
+  //   setIsPerLakh((isPerLakh) => !isPerLakh);
+  // }, [mapStatistic, setIsPerLakh]);
 
-  const handleDistrictClick = useCallback(() => {
-    const newMapView =
-      mapView === MAP_VIEWS.DISTRICTS ? MAP_VIEWS.STATES : MAP_VIEWS.DISTRICTS;
-    if (newMapView === MAP_VIEWS.STATES) {
-      setRegionHighlighted({
-        stateCode: regionHighlighted.stateCode,
-        districtName: null,
-      });
-    }
-    setMapView(newMapView);
-  }, [mapView, regionHighlighted.stateCode, setMapView, setRegionHighlighted]);
+  // const handleDistrictClick = useCallback(() => {
+  //   const newMapView =
+  //     mapView === MAP_VIEWS.DISTRICTS ? MAP_VIEWS.STATES : MAP_VIEWS.DISTRICTS;
+  //   if (newMapView === MAP_VIEWS.STATES) {
+  //     setRegionHighlighted({
+  //       stateCode: regionHighlighted.stateCode,
+  //       districtName: null,
+  //     });
+  //   }
+  //   setMapView(newMapView);
+  // }, [mapView, regionHighlighted.stateCode, setMapView, setRegionHighlighted]);
 
   const history = useHistory();
   const panelRef = useRef();
@@ -153,10 +124,10 @@ function MapExplorer({
     currentVal = '-';
   }
 
-  const spring = useSpring({
-    total: currentVal,
-    config: {tension: 250, ...SPRING_CONFIG_NUMBERS},
-  });
+  // const spring = useSpring({
+  //   total: currentVal,
+  //   config: {tension: 250, ...SPRING_CONFIG_NUMBERS},
+  // });
 
   const mapStatistics = useMemo(
     () =>
@@ -184,33 +155,33 @@ function MapExplorer({
     onSwipedRight: handleStatisticChange.bind(this, -1),
   });
 
-  const mapViz = statisticConfig?.mapConfig?.spike
-    ? MAP_VIZS.SPIKE
-    : isPerLakh ||
-      statisticConfig?.mapConfig?.colorScale ||
-      statisticConfig?.nonLinear
-    ? MAP_VIZS.CHOROPLETH
-    : MAP_VIZS.BUBBLE;
+  // const mapViz = statisticConfig?.mapConfig?.spike
+  //   ? MAP_VIZS.SPIKE
+  //   : isPerLakh ||
+  //     statisticConfig?.mapConfig?.colorScale ||
+  //     statisticConfig?.nonLinear
+  //   ? MAP_VIZS.CHOROPLETH
+  //   : MAP_VIZS.BUBBLE;
 
-  const handleDeltaClick = useCallback(() => {
-    if (statisticConfig?.showDelta) {
-      setDelta7Mode((delta7Mode) => !delta7Mode);
-    }
-  }, [statisticConfig, setDelta7Mode]);
+  // const handleDeltaClick = useCallback(() => {
+  //   if (statisticConfig?.showDelta) {
+  //     setDelta7Mode((delta7Mode) => !delta7Mode);
+  //   }
+  // }, [statisticConfig, setDelta7Mode]);
 
   const stickied = anchor === 'mapexplorer' || (expandTable && width >= 769);
 
-  const transformStatistic = useCallback(
-    (val) =>
-      statisticConfig?.mapConfig?.transformFn
-        ? statisticConfig.mapConfig.transformFn(val)
-        : val,
-    [statisticConfig]
-  );
+  // const transformStatistic = useCallback(
+  //   (val) =>
+  //     statisticConfig?.mapConfig?.transformFn
+  //       ? statisticConfig.mapConfig.transformFn(val)
+  //       : val,
+  //   [statisticConfig]
+  // );
 
-  const zoneColor = statisticConfig?.mapConfig?.colorScale
-    ? statisticConfig.mapConfig.colorScale(transformStatistic(currentVal))
-    : '';
+  // const zoneColor = statisticConfig?.mapConfig?.colorScale
+  //   ? statisticConfig.mapConfig.colorScale(transformStatistic(currentVal))
+  //   : '';
 
   return (
     <div
@@ -223,7 +194,7 @@ function MapExplorer({
         }
       )}
     >
-      <div
+      {/* <div
         className={classnames('anchor', 'fadeInUp', {
           stickied,
         })}
@@ -236,8 +207,8 @@ function MapExplorer({
         }
       >
         <PinIcon />
-      </div>
-      <div className="panel" ref={panelRef}>
+      </div> */}
+      {/* <div className="panel" ref={panelRef}>
         <div className="panel-left fadeInUp" style={trail[0]}>
           <h2
             className={classnames(mapStatistic)}
@@ -365,7 +336,7 @@ function MapExplorer({
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div
         ref={mapExplorerRef}
@@ -386,7 +357,8 @@ function MapExplorer({
             }
           >
             <div>
-              <MapComponent />
+              {user.userRole !== 'PM' && <DropdownSearch />}
+              <MapComponent properties={PropertyData} />
             </div>
             {/* <MapVisualizer
               data={mapData}

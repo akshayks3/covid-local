@@ -12,6 +12,8 @@ import {
   TESTED_EXPIRING_DAYS,
   UNKNOWN_DISTRICT_KEY,
 } from '../constants';
+import {DataProvider} from '../contexts/dataContext';
+import {useFilterContext} from '../contexts/filterContext';
 import useIsVisible from '../hooks/useIsVisible';
 import useStickySWR from '../hooks/useStickySWR';
 import {
@@ -24,18 +26,18 @@ import {
 import classnames from 'classnames';
 import {addDays, formatISO, max} from 'date-fns';
 import {useMemo, useRef, useState, lazy, Suspense} from 'react';
-import {Helmet} from 'react-helmet';
 import {useLocation} from 'react-router-dom';
 import {useLocalStorage, useSessionStorage, useWindowSize} from 'react-use';
 
 const Footer = lazy(() => retry(() => import('./Footer')));
 const MapExplorer = lazy(() => retry(() => import('./MapExplorer')));
-const StateHeader = lazy(() => retry(() => import('./StateHeader')));
+// const StateHeader = lazy(() => retry(() => import('./StateHeader')));
 const TimeseriesExplorer = lazy(() =>
   retry(() => import('./TimeseriesExplorer'))
 );
 
 function Home() {
+  console.log('this is the home');
   const [regionHighlighted, setRegionHighlighted] = useState({
     stateCode: 'TT',
     districtName: null,
@@ -73,6 +75,8 @@ function Home() {
   const homeRightElement = useRef();
   const isVisible = useIsVisible(homeRightElement);
   const {width} = useWindowSize();
+  const {setFilters} = useFilterContext();
+  // const user = localStorage.getItem('user');
 
   const hideDistrictData = date !== '' && date < DISTRICT_START_DATE;
   const hideDistrictTestData =
@@ -127,7 +131,14 @@ function Home() {
     regionHighlighted.districtName !== UNKNOWN_DISTRICT_KEY &&
     noDistrictDataStates[regionHighlighted.stateCode];
 
-  const handleFilterChange = (category, severity, dateRange, selectedHotel) => {
+  const handleFilterChange = (category, dateRange, state, brand) => {
+    setFilters((st) => ({
+      ...st,
+      category: category,
+      dateRange: dateRange,
+      state: state,
+      brand: brand,
+    }));
     // setCategory(category);
     // setSeverity(severity);
     // setDateRange(dateRange);
@@ -136,35 +147,28 @@ function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>Coronavirus Outbreak in India - covid19india.org</title>
-        <meta
-          name="title"
-          content="Coronavirus Outbreak in India: Latest Map and Case Count"
-        />
-      </Helmet>
-
-      <div className="Home">
-        <div style={{minHeight: '100vh'}}>
-          <SectionWithFilter
-            title="Filters"
-            onFilterChange={(filters) =>
-              handleFilterChange('Feedback', filters)
-            }
-          />
-          <Summary />
-          <div
-            style={{
-              maxWidth: '620px',
-              display: 'flex',
-              justifyContent: 'center',
-            }}
-          >
-            <SummaryDescription />
+      <DataProvider>
+        <div className="Home">
+          <div style={{minHeight: '100vh'}}>
+            <SectionWithFilter
+              title="Filters"
+              onFilterChange={(filters) =>
+                handleFilterChange('Feedback', filters)
+              }
+            />
+            <Summary />
+            <div
+              style={{
+                maxWidth: '620px',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <SummaryDescription />
+            </div>
           </div>
-        </div>
-        {/* <FilterSection onFilterChange={onFilterChange} /> */}
-        {/* <div className={classnames('home-left', {expanded: expandTable})}>
+          {/* <FilterSection onFilterChange={onFilterChange} /> */}
+          {/* <div className={classnames('home-left', {expanded: expandTable})}>
           <div className="header">
             <Suspense fallback={<div />}>
               <Search />
@@ -234,7 +238,7 @@ function Home() {
           )}
         </div> */}
 
-        {/* <div className="state-selection">
+          {/* <div className="state-selection">
           <div className="dropdown">
             <select
               value={JSON.stringify(selectedRegion)}
@@ -264,75 +268,77 @@ function Home() {
           </div>
         </div> */}
 
-        <div
-          className={classnames('home-right', {expanded: expandTable})}
-          ref={homeRightElement}
-          style={{minHeight: '4rem'}}
-        >
-          {(isVisible || location.hash) && (
-            <>
-              {data && (
-                <div
-                  className={classnames('map-container', {
-                    expanded: expandTable,
-                    stickied:
-                      anchor === 'mapexplorer' || (expandTable && width >= 769),
-                  })}
-                >
+          <div
+            className={classnames('home-right', {expanded: expandTable})}
+            ref={homeRightElement}
+            style={{minHeight: '4rem'}}
+          >
+            {(isVisible || location.hash) && (
+              <>
+                {data && (
+                  <div
+                    className={classnames('map-container', {
+                      expanded: expandTable,
+                      stickied:
+                        anchor === 'mapexplorer' ||
+                        (expandTable && width >= 769),
+                    })}
+                  >
+                    <Suspense fallback={<div style={{height: '50rem'}} />}>
+                      {/* <StateHeader data={data['TT']} stateCode={'TT'} /> */}
+                      <MapExplorer
+                        {...{
+                          stateCode: 'TT',
+                          data,
+                          mapStatistic,
+                          setMapStatistic,
+                          mapView,
+                          setMapView,
+                          regionHighlighted,
+                          setRegionHighlighted,
+                          anchor,
+                          setAnchor,
+                          expandTable,
+                          lastDataDate,
+                          hideDistrictData,
+                          hideDistrictTestData,
+                          hideVaccinated,
+                          noRegionHighlightedDistrictData,
+                        }}
+                      />
+                    </Suspense>
+                  </div>
+                )}
+
+                {timeseries && (
                   <Suspense fallback={<div style={{height: '50rem'}} />}>
-                    <StateHeader data={data['TT']} stateCode={'TT'} />
-                    <MapExplorer
+                    <TimeseriesExplorer
+                      stateCode="TT"
                       {...{
-                        stateCode: 'TT',
-                        data,
-                        mapStatistic,
-                        setMapStatistic,
-                        mapView,
-                        setMapView,
+                        timeseries,
+                        date,
                         regionHighlighted,
                         setRegionHighlighted,
                         anchor,
                         setAnchor,
                         expandTable,
-                        lastDataDate,
-                        hideDistrictData,
-                        hideDistrictTestData,
                         hideVaccinated,
                         noRegionHighlightedDistrictData,
                       }}
                     />
                   </Suspense>
-                </div>
-              )}
-
-              {timeseries && (
-                <Suspense fallback={<div style={{height: '50rem'}} />}>
-                  <TimeseriesExplorer
-                    stateCode="TT"
-                    {...{
-                      timeseries,
-                      date,
-                      regionHighlighted,
-                      setRegionHighlighted,
-                      anchor,
-                      setAnchor,
-                      expandTable,
-                      hideVaccinated,
-                      noRegionHighlightedDistrictData,
-                    }}
-                  />
-                </Suspense>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      {isVisible && (
-        <Suspense fallback={<div />}>
-          <Footer />
-        </Suspense>
-      )}
+        {isVisible && (
+          <Suspense fallback={<div />}>
+            <Footer />
+          </Suspense>
+        )}
+      </DataProvider>
     </>
   );
 }

@@ -1,58 +1,55 @@
-import React, {useState} from 'react';
+import {useDataContext} from '../contexts/dataContext';
+import {useFilterContext} from '../contexts/filterContext';
+import {DUMMY_CATEGORIES, PropertyData} from '../utils/commonFunctions';
 
-const hotelLocations = [
-  {
-    id: 1,
-    name: 'Hotel NYC',
-    lat: 40.7128,
-    lng: -74.006,
-    summary: 'Luxury hotel in New York City.',
-  },
-  {
-    id: 2,
-    name: 'Hotel LA',
-    lat: 34.0522,
-    lng: -118.2437,
-    summary: 'Modern hotel in Los Angeles.',
-  },
-  {
-    id: 3,
-    name: 'Hotel Chicago',
-    lat: 41.8781,
-    lng: -87.6298,
-    summary: 'Comfortable hotel in Chicago.',
-  },
-  {
-    id: 4,
-    name: 'Hotel Miami',
-    lat: 25.7617,
-    lng: -80.1918,
-    summary: 'Beachfront hotel in Miami.',
-  },
-  {
-    id: 5,
-    name: 'Hotel Seattle',
-    lat: 47.6062,
-    lng: -122.3321,
-    summary: 'Downtown hotel in Seattle.',
-  },
-];
+import React, {useEffect, useState} from 'react';
 
-const FilterSection = ({onFilterChange}) => {
+const FilterSection = ({}) => {
+  const DATE_DATA = [
+    {
+      value: '1D',
+      label: '1 Day',
+    },
+    {
+      value: '1W',
+      label: '1 Week',
+    },
+    {
+      value: '1M',
+      label: '1 Month',
+    },
+  ];
   const [category, setCategory] = useState('');
-  const [severity, setSeverity] = useState('');
+  const [selectedState, setSelectedState] = useState('');
   const [dateRange, setDateRange] = useState('1 Day');
-  const [selectedHotel, setSelectedHotel] = useState('');
-
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const {setFilters} = useFilterContext();
+  const {commonData} = useDataContext();
+  const user = JSON.parse(sessionStorage.getItem('user'));
   const handleChange = () => {
-    onFilterChange({
-      category,
-      severity,
-      dateRange,
-      selectedHotel,
-    });
+    setFilters((st) => ({
+      ...st,
+      category: category,
+      dateRange: dateRange,
+      state: selectedState,
+      brand: selectedBrand,
+    }));
   };
 
+  const getBrands = async () => {
+    const data = await fetch('http://18.61.2.25:8080/brands/');
+    const jsonData = data.json();
+    console.log('this is the json data', jsonData);
+  };
+
+  useEffect(() => {
+    getBrands();
+  }, []);
+
+  const DUMMY_STATES = [
+    ...new Set(PropertyData.map((property) => property.state)),
+  ];
+  console.log('these are the states', DUMMY_STATES);
   const selectStyle = {
     backgroundColor: '#1e1e2f',
     color: '#e0e0e0',
@@ -60,7 +57,7 @@ const FilterSection = ({onFilterChange}) => {
     borderRadius: '6px',
     padding: '8px 12px',
     fontSize: '14px',
-    width: '180px',
+    width: '220px',
   };
 
   const labelStyle = {
@@ -70,19 +67,20 @@ const FilterSection = ({onFilterChange}) => {
     display: 'block',
   };
 
+  const rowStyle = {
+    display: 'flex',
+    gap: '1.5rem',
+    padding: '1rem',
+    background: '#111827',
+    borderRadius: '10px',
+    flexWrap: 'wrap',
+    border: '1px solid #2a2f45',
+    justifyContent: 'space-between',
+  };
+
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          gap: '1.5rem',
-          padding: '1rem',
-          background: '#111827',
-          borderRadius: '10px',
-          flexWrap: 'wrap',
-          border: '1px solid #2a2f45',
-        }}
-      >
+      <div style={rowStyle}>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <label style={labelStyle}>Category</label>
           <select
@@ -93,43 +91,16 @@ const FilterSection = ({onFilterChange}) => {
               handleChange();
             }}
           >
-            <option value="">Category 1</option>
-            <option value="Low">Category 2</option>
-            <option value="Moderate">Category 3</option>
-            <option value="High">Category 4</option>
-            <option value="Critical">Category 5</option>
+            <option value="all">All</option>
+            {DUMMY_CATEGORIES.map((category) => {
+              return (
+                <option value={category.id} key={category.id}>
+                  {category.name}
+                </option>
+              );
+            })}
           </select>
         </div>
-        {/* Severity Dropdown */}
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <label style={labelStyle}>Severity</label>
-          <select
-            style={selectStyle}
-            value={severity}
-            onChange={(e) => {
-              setSeverity(e.target.value);
-              handleChange();
-            }}
-          >
-            <option value="">All</option>
-            <option value="Low">Low</option>
-            <option value="Moderate">Moderate</option>
-            <option value="High">High</option>
-            <option value="Critical">Critical</option>
-          </select>
-        </div>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          gap: '1.5rem',
-          padding: '1rem',
-          background: '#111827',
-          borderRadius: '10px',
-          flexWrap: 'wrap',
-          border: '1px solid #2a2f45',
-        }}
-      >
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <label style={labelStyle}>Date Range</label>
           <select
@@ -140,76 +111,49 @@ const FilterSection = ({onFilterChange}) => {
               handleChange();
             }}
           >
-            <option value="1 Day">1 Day</option>
-            <option value="1 Week">1 Week</option>
-            <option value="1 Month">1 Month</option>
+            {DATE_DATA.map((date) => (
+              <option value={date.value} key={date.value}>
+                {date.label}
+              </option>
+            ))}
           </select>
         </div>
-
+      </div>
+      <div style={rowStyle}>
+        {user.userRole !== 'PM' && (
+          <div style={{display: 'flex', flexDirection: 'column'}}>
+            <label style={labelStyle}>State</label>
+            <select
+              style={selectStyle}
+              value={selectedState}
+              onChange={(e) => {
+                setSelectedState(e.target.value);
+                handleChange();
+              }}
+            >
+              <option value="all">All</option>
+              {DUMMY_STATES.map((state) => (
+                <option value={state} key={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <label style={labelStyle}>Brands</label>
           <select
             style={selectStyle}
-            value={severity}
+            value={selectedBrand}
             onChange={(e) => {
-              setSeverity(e.target.value);
+              setSelectedBrand(e.target.value);
               handleChange();
             }}
           >
-            <option value="">All</option>
-            <option value="Low">Marriott</option>
-            <option value="Moderate">JW Marriott</option>
-            <option value="High">WestIn</option>
-            <option value="Critical">Sheraton</option>
-          </select>
-        </div>
-      </div>
-      <div
-        style={{
-          display: 'flex',
-          gap: '1.5rem',
-          padding: '1rem',
-          background: '#111827',
-          borderRadius: '10px',
-          flexWrap: 'wrap',
-          border: '1px solid #2a2f45',
-        }}
-      >
-        {/* Date Range Dropdown */}
-
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <label style={labelStyle}>State</label>
-          <select
-            style={selectStyle}
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              handleChange();
-            }}
-          >
-            <option value="">All</option>
-            <option value="Low">Atlanta</option>
-            <option value="Moderate">Miami</option>
-            <option value="High">California</option>
-            <option value="Critical">Georgia</option>
-          </select>
-        </div>
-
-        {/* Hotel Dropdown */}
-        <div style={{display: 'flex', flexDirection: 'column'}}>
-          <label style={labelStyle}>Hotel</label>
-          <select
-            style={selectStyle}
-            value={selectedHotel}
-            onChange={(e) => {
-              setSelectedHotel(e.target.value);
-              handleChange();
-            }}
-          >
-            <option value="">All Hotels</option>
-            {hotelLocations.map((hotel) => (
-              <option key={hotel.id} value={hotel.id}>
-                {hotel.name}
+            {user.userRole === 'SA' && <option value="">All</option>}
+            {commonData.brands.map((brand) => (
+              <option value={brand?.id} key={brand?.id}>
+                {brand?.name}
               </option>
             ))}
           </select>

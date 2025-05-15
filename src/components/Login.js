@@ -2,21 +2,22 @@ import {useState} from 'react';
 
 const DUMMY_USERS = [
   {
-    username: 'admin@gmail.com',
-    password: 'Admin1234',
+    username: 'chainmanager@marriott.com',
+    password: 'Test@1234',
     userRole: 'SA' /* Super Admin */,
   },
   {
-    username: 'propertyadmin@ymail.com',
-    password: 'Property1234',
-    userRole: 'PA' /* Property Admin */,
+    username: 'courtyardbrandmanager@marriott.com',
+    password: 'Test@1234',
+    userRole: 'BM' /* Brand Manager */,
+    brandId: 'MC',
     propertyId: 'MAQ',
   },
   {
-    username: 'user@gmail.com',
-    password: 'User1234',
-    userRole: 'RA' /* Regional Admin */,
-    region: ['WA', 'AT'],
+    username: 'NYCMQmanager@marriott.com',
+    password: 'Test@1234',
+    userRole: 'PM' /* Property Manager */,
+    propertyId: 'NYCMQ',
   },
 ];
 
@@ -123,7 +124,6 @@ export default function LoginPage({setUser}) {
           <button type="submit" className="login-button">
             Login
           </button>
-          {console.log('this is the wrong password', wrongPassword)}
           {wrongPassword && (
             <div style={{textAlign: 'center', color: 'red'}}>
               Invalid Credentials
