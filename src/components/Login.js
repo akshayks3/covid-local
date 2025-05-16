@@ -11,7 +11,6 @@ const DUMMY_USERS = [
     password: 'Test@1234',
     userRole: 'BM' /* Brand Manager */,
     brandId: 'MC',
-    propertyId: 'MAQ',
   },
   {
     username: 'NYCMQmanager@marriott.com',

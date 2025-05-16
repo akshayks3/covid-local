@@ -1,5 +1,4 @@
 import {useFilterContext} from '../contexts/filterContext';
-import {PropertyData} from '../utils/commonFunctions';
 
 import {
   GoogleMap,
@@ -109,7 +108,7 @@ const MapComponent = ({properties}) => {
     console.log('this is the hotel filter', filters);
     if (filters.hotel) {
       setZoom(6);
-      const property = PropertyData.find(
+      const property = properties.find(
         (property) => property.name === filters.hotel
       );
       setMapCenter({
@@ -120,8 +119,9 @@ const MapComponent = ({properties}) => {
         setZoom(14);
       }, 1000);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
-
+  console.log('these are the properties', properties);
   return isLoaded ? (
     <GoogleMap
       mapContainerStyle={containerStyle}
@@ -132,7 +132,7 @@ const MapComponent = ({properties}) => {
         disableDefaultUI: true,
       }}
     >
-      {properties.map((hotel) => (
+      {properties?.map((hotel) => (
         <React.Fragment key={hotel.id}>
           <Marker
             position={{
@@ -198,9 +198,10 @@ const MapComponent = ({properties}) => {
                   {hotel.feedbackSummary}
                 </p>
                 <strong
-                  style={{marginTop: '6px', fontSize: '13px', fontWeight: 500}}
+                  style={{marginTop: '6px', fontSize: '16px', fontWeight: 700}}
                 >
-                  Ratings : {hotel.feedbackRating}
+                  <span style={{fontWeight: 800}}>Rating</span> :{' '}
+                  {hotel.feedbackRating}/5
                 </strong>
               </div>
             </OverlayView>

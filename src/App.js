@@ -2,6 +2,7 @@ import './App.scss';
 import Incidents from './components/Incidents';
 import LoginPage from './components/Login';
 import Navbar from './components/Navbar';
+import {DataProvider} from './contexts/dataContext';
 import {FilterProvider} from './contexts/filterContext';
 import {retry} from './utils/commonFunctions';
 
@@ -82,44 +83,46 @@ const App = () => {
     <div className="App">
       {user.userRole && (
         <>
-          <Suspense fallback={<div />}>
-            <LanguageSwitcher
-              {...{showLanguageSwitcher, setShowLanguageSwitcher}}
-            />
-          </Suspense>
+          <DataProvider>
+            <FilterProvider>
+              <Suspense fallback={<div />}>
+                <LanguageSwitcher
+                  {...{showLanguageSwitcher, setShowLanguageSwitcher}}
+                />
+              </Suspense>
 
-          <Navbar
-            {...{
-              pages,
-              showLanguageSwitcher,
-              setShowLanguageSwitcher,
-              setUser,
-              user,
-            }}
-          />
+              <Navbar
+                {...{
+                  pages,
+                  showLanguageSwitcher,
+                  setShowLanguageSwitcher,
+                  setUser,
+                  user,
+                }}
+              />
 
-          {/* <Banner /> */}
-          <FilterProvider>
-            <Suspense fallback={<div />}>
-              <Switch location={location}>
-                {pages
-                  .filter((page) => {
-                    return page.showInNavbar;
-                  })
-                  .map((page, index) => {
-                    return (
-                      <Route
-                        exact
-                        path={page.pageLink}
-                        render={({match}) => <page.view />}
-                        key={index}
-                      />
-                    );
-                  })}
-                <Redirect to="/" />
-              </Switch>
-            </Suspense>
-          </FilterProvider>
+              {/* <Banner /> */}
+              <Suspense fallback={<div />}>
+                <Switch location={location}>
+                  {pages
+                    .filter((page) => {
+                      return page.showInNavbar;
+                    })
+                    .map((page, index) => {
+                      return (
+                        <Route
+                          exact
+                          path={page.pageLink}
+                          render={({match}) => <page.view />}
+                          key={index}
+                        />
+                      );
+                    })}
+                  <Redirect to="/" />
+                </Switch>
+              </Suspense>
+            </FilterProvider>
+          </DataProvider>
         </>
       )}
       {!user.userRole && <LoginPage setUser={setUser} />}

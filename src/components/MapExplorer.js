@@ -3,7 +3,8 @@ import MapVisualizerLoader from './loaders/MapVisualizer';
 import MapComponent from './MapComponent';
 
 import {MAP_STATISTICS, STATE_NAMES, STATISTIC_CONFIGS} from '../constants';
-import {getStatistic, PropertyData} from '../utils/commonFunctions';
+import {useDataContext} from '../contexts/dataContext';
+import {getStatistic} from '../utils/commonFunctions';
 
 import classnames from 'classnames';
 import equal from 'fast-deep-equal';
@@ -29,18 +30,10 @@ function MapExplorer({
   // const {t} = useTranslation();
   const mapExplorerRef = useRef();
   const {width} = useWindowSize();
-  const user = JSON.parse(localStorage.getItem('user'));
+  // const user = JSON.parse(sessionStorage.getItem('user'));
   const [isPerLakh] = useSessionStorage('isPerLakhMap', false);
   const [delta7Mode] = useSessionStorage('delta7ModeMap', false);
-  // const mapMeta = MAP_META[mapCode];
-
-  // const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
-
-  // const isDistrictView =
-  //   mapView === MAP_VIEWS.DISTRICTS &&
-  //   (mapMeta.mapType === MAP_TYPES.STATE ||
-  //     (!hideDistrictData &&
-  //       !(hideDistrictTestData && statisticConfig?.category === 'tested')));
+  const {commonData} = useDataContext();
 
   const hoveredRegion = useMemo(() => {
     const hoveredData =
@@ -56,26 +49,6 @@ function MapExplorer({
         STATE_NAMES[regionHighlighted.stateCode];
     });
   }, [data, regionHighlighted.stateCode, regionHighlighted.districtName]);
-
-  // const handlePerLakhClick = useCallback(() => {
-  //   const statisticConfig = STATISTIC_CONFIGS[mapStatistic];
-  //   if (statisticConfig?.nonLinear || mapStatistic === 'population') {
-  //     return;
-  //   }
-  //   setIsPerLakh((isPerLakh) => !isPerLakh);
-  // }, [mapStatistic, setIsPerLakh]);
-
-  // const handleDistrictClick = useCallback(() => {
-  //   const newMapView =
-  //     mapView === MAP_VIEWS.DISTRICTS ? MAP_VIEWS.STATES : MAP_VIEWS.DISTRICTS;
-  //   if (newMapView === MAP_VIEWS.STATES) {
-  //     setRegionHighlighted({
-  //       stateCode: regionHighlighted.stateCode,
-  //       districtName: null,
-  //     });
-  //   }
-  //   setMapView(newMapView);
-  // }, [mapView, regionHighlighted.stateCode, setMapView, setRegionHighlighted]);
 
   const history = useHistory();
   const panelRef = useRef();
@@ -155,33 +128,7 @@ function MapExplorer({
     onSwipedRight: handleStatisticChange.bind(this, -1),
   });
 
-  // const mapViz = statisticConfig?.mapConfig?.spike
-  //   ? MAP_VIZS.SPIKE
-  //   : isPerLakh ||
-  //     statisticConfig?.mapConfig?.colorScale ||
-  //     statisticConfig?.nonLinear
-  //   ? MAP_VIZS.CHOROPLETH
-  //   : MAP_VIZS.BUBBLE;
-
-  // const handleDeltaClick = useCallback(() => {
-  //   if (statisticConfig?.showDelta) {
-  //     setDelta7Mode((delta7Mode) => !delta7Mode);
-  //   }
-  // }, [statisticConfig, setDelta7Mode]);
-
   const stickied = anchor === 'mapexplorer' || (expandTable && width >= 769);
-
-  // const transformStatistic = useCallback(
-  //   (val) =>
-  //     statisticConfig?.mapConfig?.transformFn
-  //       ? statisticConfig.mapConfig.transformFn(val)
-  //       : val,
-  //   [statisticConfig]
-  // );
-
-  // const zoneColor = statisticConfig?.mapConfig?.colorScale
-  //   ? statisticConfig.mapConfig.colorScale(transformStatistic(currentVal))
-  //   : '';
 
   return (
     <div
@@ -194,150 +141,6 @@ function MapExplorer({
         }
       )}
     >
-      {/* <div
-        className={classnames('anchor', 'fadeInUp', {
-          stickied,
-        })}
-        style={{
-          display: width < 769 || (width >= 769 && expandTable) ? 'none' : '',
-        }}
-        onClick={
-          setAnchor &&
-          setAnchor.bind(this, anchor === 'mapexplorer' ? null : 'mapexplorer')
-        }
-      >
-        <PinIcon />
-      </div> */}
-      {/* <div className="panel" ref={panelRef}>
-        <div className="panel-left fadeInUp" style={trail[0]}>
-          <h2
-            className={classnames(mapStatistic)}
-            style={{color: zoneColor || statisticConfig?.color}}
-          >
-            {t(hoveredRegion.name)}
-            {hoveredRegion.name === UNKNOWN_DISTRICT_KEY &&
-              ` [${t(STATE_NAMES[regionHighlighted.stateCode])}]`}
-          </h2>
-
-          {regionHighlighted.stateCode && (
-            <h1
-              className={classnames('district', mapStatistic)}
-              style={{color: zoneColor || statisticConfig?.color}}
-            >
-              <animated.div>
-                {spring.total.to((total) =>
-                  !noRegionHighlightedDistrictData ||
-                  !statisticConfig?.hasPrimary
-                    ? formatNumber(total, statisticConfig.format, mapStatistic)
-                    : '-'
-                )}
-              </animated.div>
-              <StatisticDropdown
-                currentStatistic={mapStatistic}
-                statistics={mapStatistics}
-                mapType={mapMeta.mapType}
-                {...{
-                  isPerLakh,
-                  delta7Mode,
-                  mapStatistic,
-                  setMapStatistic,
-                  hideDistrictTestData,
-                  hideVaccinated,
-                  zoneColor,
-                }}
-              />
-            </h1>
-          )}
-        </div>
-
-        <div className={classnames('panel-right', `is-${mapStatistic}`)}>
-          <div className="switch-type">
-            <Tooltip message={'Last 7 day values'} hold>
-              <div
-                className={classnames('toggle', 'fadeInUp', {
-                  'is-highlighted':
-                    (delta7Mode && statisticConfig?.showDelta) ||
-                    statisticConfig?.onlyDelta7,
-                  disabled: !statisticConfig?.showDelta,
-                })}
-                onClick={handleDeltaClick}
-                style={trail[1]}
-              >
-                <Delta7Icon />
-              </div>
-            </Tooltip>
-
-            <Tooltip message={'Per lakh people'} hold>
-              <div
-                className={classnames('toggle', 'fadeInUp', {
-                  'is-highlighted':
-                    !statisticConfig?.nonLinear &&
-                    mapViz === MAP_VIZS.CHOROPLETH,
-                  disabled:
-                    statisticConfig?.nonLinear || mapStatistic === 'population',
-                })}
-                onClick={handlePerLakhClick}
-                style={trail[2]}
-              >
-                <PerLakhIcon />
-              </div>
-            </Tooltip>
-
-            {mapMeta.mapType === MAP_TYPES.COUNTRY && (
-              <Tooltip message={'Toggle between states/districts'} hold>
-                <div
-                  className={classnames('toggle', 'boundary fadeInUp', {
-                    'is-highlighted': isDistrictView,
-                    disabled:
-                      hideDistrictData ||
-                      (statisticConfig?.category === 'tested' &&
-                        hideDistrictTestData),
-                  })}
-                  onClick={handleDistrictClick}
-                  style={trail[3]}
-                >
-                  <OrganizationIcon />
-                </div>
-              </Tooltip>
-            )}
-
-            {mapMeta.mapType === MAP_TYPES.STATE && (
-              <>
-                <div className="divider" />
-                <div
-                  className="toggle back fadeInUp"
-                  onClick={() => {
-                    history.push('/#MapExplorer');
-                  }}
-                  style={trail[4]}
-                >
-                  <ArrowLeftIcon />
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="switch-statistic fadeInUp" style={trail[5]}>
-            {mapStatistics.map((statistic) => (
-              <div
-                key={statistic}
-                className={classnames(
-                  'toggle',
-                  'statistic-option',
-                  `is-${statistic}`,
-                  {
-                    'is-highlighted': mapStatistic === statistic,
-                  }
-                )}
-                onClick={setMapStatistic.bind(this, statistic)}
-              >
-                <DotFillIcon />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div> */}
-
       <div
         ref={mapExplorerRef}
         className="fadeInUp"
@@ -357,8 +160,8 @@ function MapExplorer({
             }
           >
             <div>
-              {user.userRole !== 'PM' && <DropdownSearch />}
-              <MapComponent properties={PropertyData} />
+              <DropdownSearch />
+              <MapComponent properties={commonData.hotels} />
             </div>
             {/* <MapVisualizer
               data={mapData}

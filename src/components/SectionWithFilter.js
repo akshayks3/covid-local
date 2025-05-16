@@ -2,7 +2,7 @@ import FilterSection from './FilterSection';
 
 import React from 'react';
 
-const SectionWithFilter = ({title, onFilterChange}) => (
+const SectionWithFilter = ({title}) => (
   <div
     style={{
       marginBottom: '2rem',
@@ -15,7 +15,7 @@ const SectionWithFilter = ({title, onFilterChange}) => (
     <h2 style={{color: '#e5e7eb', fontSize: '1.25rem', marginBottom: '1rem'}}>
       {title}
     </h2>
-    <FilterSection onFilterChange={onFilterChange} />
+    <FilterSection />
     {/* You can add a table or map preview here based on filters */}
   </div>
 );

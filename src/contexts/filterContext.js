@@ -1,3 +1,5 @@
+import {useDataContext} from './dataContext';
+
 import React, {createContext, useContext, useState} from 'react';
 
 // Create context
@@ -5,16 +7,23 @@ const FilterContext = createContext();
 
 // Default filters
 const defaultFilters = {
-  category: 'All',
+  category: '',
   dateRange: '1 Week',
-  state: 'All',
-  brand: 'All',
+  state: '',
+  brand: '',
   hotel: null,
 };
 
 // Provider component
 export const FilterProvider = ({children}) => {
-  const [filters, setFilterState] = useState(defaultFilters);
+  const user = JSON.parse(sessionStorage.getItem('user'));
+  const {commonData} = useDataContext();
+  const hotelDefaultFilter =
+    user.userRole === 'PM'
+      ? commonData.hotels.find((hotel) => hotel.id === user.propertyId)?.name
+      : null;
+  const newFilters = {...defaultFilters, hotel: hotelDefaultFilter};
+  const [filters, setFilterState] = useState(newFilters);
 
   const setFilters = (newFilters) => {
     setFilterState((prev) => ({

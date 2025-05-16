@@ -10,25 +10,28 @@ const animatedPlaceholders = [
   'Eg: CHICM',
 ];
 
-// Dummy hotel suggestions
-// const hotelSuggestions = [
-//   'Marriott Times Square',
-//   'JW Marriott Mumbai',
-//   'Marriott Marquis Houston',
-//   'Courtyard by Marriott Goa',
-//   'Fairfield by Marriott Pune',
-//   'Ritz-Carlton Bangalore',
-//   'Marriott Jaipur',
-//   'Marriott Tokyo',
-// ];
-
 export const DropdownSearch = () => {
   const [placeholder, setPlaceholder] = useState(animatedPlaceholders[0]);
   const [searchValue, setSearchValue] = useState('');
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [inputDisabled, setInputDisabled] = useState(false);
+
   const {setFilters} = useFilterContext();
   const {commonData} = useDataContext();
+  const user = JSON.parse(sessionStorage.getItem('user'));
+
+  useEffect(() => {
+    if (user.userRole === 'PM') {
+      const property = commonData.hotels.find(
+        (data) => data?.id === user?.propertyId
+      );
+      setSearchValue(property?.name);
+      setShowSuggestions(false);
+      setInputDisabled(true); // Always disabled for PM
+    }
+  }, [commonData.hotels, user]);
+
   // Placeholder animation
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,7 +46,7 @@ export const DropdownSearch = () => {
 
   // Filter suggestions on input change
   useEffect(() => {
-    if (searchValue.trim().length > 0) {
+    if (searchValue?.trim()?.length > 0) {
       const results = commonData.hotels
         .filter(
           (hotel) =>
@@ -56,19 +59,24 @@ export const DropdownSearch = () => {
     } else {
       setShowSuggestions(false);
     }
-  }, [searchValue, commonData]);
+  }, [searchValue, commonData.hotels]);
 
   const handleSelectSuggestion = (hotel) => {
-    console.log('this is the hotel', hotel);
-    setFilters({
-      hotel: hotel,
-    });
+    setFilters({hotel});
     setSearchValue(hotel);
     setShowSuggestions(false);
+    setInputDisabled(true); // disable input after selection
+  };
+
+  const handleCancelSelection = () => {
+    setSearchValue('');
+    setFilters({hotel: null});
+    setShowSuggestions(false);
+    setInputDisabled(false);
   };
 
   return (
-    <div className="dropdown-search">
+    <div className="dropdown-search" style={{position: 'relative'}}>
       <input
         type="text"
         value={searchValue}
@@ -76,18 +84,26 @@ export const DropdownSearch = () => {
         onChange={(e) => setSearchValue(e.target.value)}
         onFocus={() => searchValue && setShowSuggestions(true)}
         className="search-input"
+        disabled={inputDisabled}
       />
-      {/* <button className="search-button">🔍</button> */}
 
-      {showSuggestions && filteredSuggestions.length > 0 && (
-        <ul className="suggestion-list">
-          {filteredSuggestions.map((hotel, idx) => (
-            <li key={idx} onClick={() => handleSelectSuggestion(hotel)}>
-              {hotel}
-            </li>
-          ))}
-        </ul>
+      {inputDisabled && user.userRole !== 'PM' && (
+        <button onClick={handleCancelSelection} className="cancel-button">
+          Cancel
+        </button>
       )}
+
+      {showSuggestions &&
+        filteredSuggestions.length > 0 &&
+        user.userRole !== 'PM' && (
+          <ul className="suggestion-list">
+            {filteredSuggestions.map((hotel, idx) => (
+              <li key={idx} onClick={() => handleSelectSuggestion(hotel)}>
+                {hotel}
+              </li>
+            ))}
+          </ul>
+        )}
     </div>
   );
 };

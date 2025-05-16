@@ -506,3 +506,131 @@ export const DUMMY_CATEGORIES = [
     name: 'Technology',
   },
 ];
+
+export const API_URL = 'http://18.61.2.25:8080';
+
+export const FeedbackData = {
+  feedbackList: [
+    {
+      id: 1,
+      feedbackText: 'cleanliness is not good in the room',
+      categoryIds: '3',
+      rating: 2,
+      property: {
+        id: 'ABIRI',
+        name: 'Residence Inn Abilene',
+        description: null,
+        coordinates: '32.47322, -99.692066',
+        brand: {
+          id: 'RI',
+          name: 'Residence Inn',
+          url: null,
+        },
+        state: 'Texas',
+        district: 'Abilene',
+        imageUrl:
+          'https://cache.marriott.com/content/dam/marriotts7prod/ABIRI/abiri-pool-0037-hor-clsc.jpg',
+        adminEmail: 'adminsentiment@yopmail.com',
+        incidentSummary:
+          "The cleanliness of the room is not satisfactory. This issue may affect the guest's comfort and perception of the hotel. Prompt action is needed to address this concern and ensure the room meets hygiene standards.",
+        feedbackSummary:
+          "The room's cleanliness is unsatisfactory, impacting guest comfort and requiring immediate attention to meet hygiene standards.",
+        feedbackRating: 0,
+      },
+      createdTsz: '2025-05-15T20:03:31.174005Z',
+    },
+    {
+      id: 2,
+      feedbackText:
+        'Cab experience provided by hotel to travel is not good in the room AC was not working',
+      categoryIds: '4, 10',
+      rating: 3,
+      property: {
+        id: 'AMACY',
+        name: 'Courtyard Amarillo West/Medical Center',
+        description: null,
+        coordinates: '35.187936, -101.930333',
+        brand: {
+          id: 'CY',
+          name: 'Courtyard',
+          url: 'https://www.marriott.com',
+        },
+        state: 'Texas',
+        district: 'Amarillo',
+        imageUrl:
+          'https://cache.marriott.com/is/image/marriotts7prod/cy-amacy-cy-amacy-1-king-14841-42623:Classic-Hor',
+        adminEmail: 'adminfeedback@yopmail.com',
+        incidentSummary: '',
+        feedbackSummary:
+          "The guest reported dissatisfaction with the hotel's cab service and a malfunctioning room AC.",
+        feedbackRating: 0,
+      },
+      createdTsz: '2025-05-15T20:09:10.758043Z',
+    },
+  ],
+  feedbackListAIResponse: {
+    summary:
+      'The overall feedback indicates dissatisfaction with cleanliness and service issues related to the room and travel arrangements.',
+    rating: 2,
+    improvements:
+      'Improve room cleanliness and ensure all amenities, such as ACs, are functioning properly. Enhance the quality of travel services provided.',
+    xpoints: ['Cleanliness', 'Service'],
+    ypoints: ['2', '3'],
+    xcoordinate: 'Categories',
+    ycoordinate: 'Average Rating',
+  },
+};
+
+export function getRatingOverTimeGraph(feedbackList) {
+  const dateMap = {};
+
+  for (const feedback of feedbackList) {
+    const dateStr = format(new Date(feedback.createdTsz), 'yyyy-MM-dd');
+
+    if (!dateMap[dateStr]) dateMap[dateStr] = {total: 0, count: 0};
+    dateMap[dateStr].total += feedback.rating;
+    dateMap[dateStr].count += 1;
+  }
+
+  const xAxisValues = Object.keys(dateMap).sort();
+  const yAxisValues = xAxisValues.map(
+    (date) => +(dateMap[date].total / dateMap[date].count).toFixed(2)
+  );
+
+  return {
+    xpoints: xAxisValues,
+    ypoints: yAxisValues,
+    xcoordinate: 'Date',
+    ycoordinate: 'Average Rating',
+    graphTitle: 'Average Rating Over Time',
+  };
+}
+
+export function getFeedbackCountByCategory(feedbackList, categories) {
+  const countMap = {};
+  const categoryMap = categories.reduce((acc, category) => {
+    acc[category.id] = category.name;
+    return acc;
+  }, {});
+
+  for (const feedback of feedbackList) {
+    const categories = feedback.categoryIds.split(',').map((id) => id.trim());
+
+    for (const catId of categories) {
+      countMap[catId] = (countMap[catId] || 0) + 1;
+    }
+  }
+
+  const xAxisValues = Object.keys(countMap).map(
+    (id) => categoryMap[id] || `Category ${id}`
+  );
+  const yAxisValues = Object.keys(countMap).map((id) => countMap[id]);
+
+  return {
+    xpoints: xAxisValues,
+    ypoints: yAxisValues,
+    xcoordinate: 'Categories',
+    ycoordinate: 'Feedback Count',
+    graphTitle: 'Number of Feedbacks by Category',
+  };
+}

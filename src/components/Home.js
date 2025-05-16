@@ -1,3 +1,4 @@
+import RatingChart from './RatingsChart';
 import SectionWithFilter from './SectionWithFilter';
 import Summary from './Summary';
 import SummaryDescription from './SummaryDescription';
@@ -12,12 +13,13 @@ import {
   TESTED_EXPIRING_DAYS,
   UNKNOWN_DISTRICT_KEY,
 } from '../constants';
-import {DataProvider} from '../contexts/dataContext';
-import {useFilterContext} from '../contexts/filterContext';
+import {useDataContext} from '../contexts/dataContext';
 import useIsVisible from '../hooks/useIsVisible';
 import useStickySWR from '../hooks/useStickySWR';
 import {
   fetcher,
+  getFeedbackCountByCategory,
+  getRatingOverTimeGraph,
   getStatistic,
   parseIndiaDate,
   retry,
@@ -25,16 +27,16 @@ import {
 
 import classnames from 'classnames';
 import {addDays, formatISO, max} from 'date-fns';
-import {useMemo, useRef, useState, lazy, Suspense} from 'react';
+import {useMemo, useRef, useState, lazy, Suspense, useEffect} from 'react';
 import {useLocation} from 'react-router-dom';
 import {useLocalStorage, useSessionStorage, useWindowSize} from 'react-use';
 
 const Footer = lazy(() => retry(() => import('./Footer')));
 const MapExplorer = lazy(() => retry(() => import('./MapExplorer')));
 // const StateHeader = lazy(() => retry(() => import('./StateHeader')));
-const TimeseriesExplorer = lazy(() =>
-  retry(() => import('./TimeseriesExplorer'))
-);
+// const TimeseriesExplorer = lazy(() =>
+//   retry(() => import('./TimeseriesExplorer'))
+// );
 
 function Home() {
   console.log('this is the home');
@@ -54,14 +56,14 @@ function Home() {
   const [date] = useState('');
   const location = useLocation();
 
-  const {data: timeseries} = useStickySWR(
-    `${DATA_API_ROOT}/timeseries.min.json`,
-    fetcher,
-    {
-      revalidateOnMount: true,
-      refreshInterval: API_REFRESH_INTERVAL,
-    }
-  );
+  // const {data: timeseries} = useStickySWR(
+  //   `${DATA_API_ROOT}/timeseries.min.json`,
+  //   fetcher,
+  //   {
+  //     revalidateOnMount: true,
+  //     refreshInterval: API_REFRESH_INTERVAL,
+  //   }
+  // );
 
   const {data} = useStickySWR(
     `${DATA_API_ROOT}/data${date ? `-${date}` : ''}.min.json`,
@@ -75,9 +77,17 @@ function Home() {
   const homeRightElement = useRef();
   const isVisible = useIsVisible(homeRightElement);
   const {width} = useWindowSize();
-  const {setFilters} = useFilterContext();
-  // const user = localStorage.getItem('user');
+  const {commonData} = useDataContext();
+  const [feedbackData, setFeedbackData] = useState([]);
+  const [feedbackSummary, setFeedbackSummary] = useState('');
 
+  useEffect(() => {
+    console.log('this is the common data', commonData);
+    setFeedbackData(commonData?.feedbackList || []);
+    setFeedbackSummary(commonData?.feedbackListAIResponse || null);
+  }, [commonData]);
+  // const user = localStorage.getItem('user');
+  console.log;
   const hideDistrictData = date !== '' && date < DISTRICT_START_DATE;
   const hideDistrictTestData =
     date === '' ||
@@ -124,221 +134,125 @@ function Home() {
       }, {}),
     [data]
   );
-
+  console.log('feedback list', feedbackData);
+  console.log('feedback summary', feedbackSummary);
   const noRegionHighlightedDistrictData =
     regionHighlighted?.stateCode &&
     regionHighlighted?.districtName &&
     regionHighlighted.districtName !== UNKNOWN_DISTRICT_KEY &&
     noDistrictDataStates[regionHighlighted.stateCode];
 
-  const handleFilterChange = (category, dateRange, state, brand) => {
-    setFilters((st) => ({
-      ...st,
-      category: category,
-      dateRange: dateRange,
-      state: state,
-      brand: brand,
-    }));
-    // setCategory(category);
-    // setSeverity(severity);
-    // setDateRange(dateRange);
-    // setSelectedHotel(selectedHotel);
+  const CATEGORY_CHART = {
+    xpoints: feedbackSummary?.xpoints || [],
+    ypoints: feedbackSummary?.ypoints || [],
+    xcoordinate: feedbackSummary?.xcoordinate || [],
+    ycoordinate: feedbackSummary?.ycoordinate || [],
   };
+
+  const AVG_RATING_OVER_TIME = getRatingOverTimeGraph(feedbackData);
+  const NUM_FEEDBACKS_BY_CATEGORY = getFeedbackCountByCategory(
+    feedbackData,
+    commonData.categories
+  );
 
   return (
     <>
-      <DataProvider>
-        <div className="Home">
-          <div style={{minHeight: '100vh'}}>
-            <SectionWithFilter
-              title="Filters"
-              onFilterChange={(filters) =>
-                handleFilterChange('Feedback', filters)
-              }
-            />
-            <Summary />
-            <div
-              style={{
-                maxWidth: '620px',
-                display: 'flex',
-                justifyContent: 'center',
-              }}
-            >
-              <SummaryDescription />
-            </div>
-          </div>
-          {/* <FilterSection onFilterChange={onFilterChange} /> */}
-          {/* <div className={classnames('home-left', {expanded: expandTable})}>
-          <div className="header">
-            <Suspense fallback={<div />}>
-              <Search />
-            </Suspense>
-
-            {!data && !timeseries && <div style={{height: '60rem'}} />}
-
-            <>
-              {!timeseries && <div style={{minHeight: '61px'}} />}
-              {timeseries && (
-                <Suspense fallback={<div style={{minHeight: '61px'}} />}>
-                  <Actions
-                    {...{
-                      date,
-                      setDate,
-                      dates: Object.keys(timeseries['TT']?.dates),
-                      lastUpdatedDate,
-                    }}
-                  />
-                </Suspense>
-              )}
-            </>
-          </div>
-
-          <div style={{position: 'relative', marginTop: '1rem'}}>
-            {data && (
-              <Suspense fallback={<div style={{height: '50rem'}} />}>
-                {width >= 769 && !expandTable && (
-                  <MapSwitcher {...{mapStatistic, setMapStatistic}} />
-                )}
-                <Level data={data['TT']} />
-              </Suspense>
-            )}
-
-            <>
-              {!timeseries && <div style={{height: '123px'}} />}
-              {timeseries && (
-                <Suspense fallback={<div style={{height: '123px'}} />}>
-                  <Minigraphs
-                    timeseries={timeseries['TT']?.dates}
-                    {...{date}}
-                  />
-                </Suspense>
-              )}
-            </>
-          </div>
-
-          {!hideVaccinated && <VaccinationHeader data={data['TT']} />}
-
-          {data && (
-            <Suspense fallback={<TableLoader />}>
-              <Table
-                {...{
-                  data,
-                  regionHighlighted,
-                  setRegionHighlighted,
-                  expandTable,
-                  setExpandTable,
-                  hideDistrictData,
-                  hideDistrictTestData,
-                  hideVaccinated,
-                  lastDataDate,
-                  noDistrictDataStates,
-                }}
-              />
-            </Suspense>
-          )}
-        </div> */}
-
-          {/* <div className="state-selection">
-          <div className="dropdown">
-            <select
-              value={JSON.stringify(selectedRegion)}
-              onChange={handleChange}
-            >
-              {dropdownRegions
-                .filter(
-                  (region) =>
-                    STATE_NAMES[region.stateCode] !== region.districtName
-                )
-                .map((region) => {
-                  return (
-                    <option
-                      value={JSON.stringify(region)}
-                      key={`${region.stateCode}-${region.districtName}`}
-                    >
-                      {region.districtName
-                        ? t(region.districtName)
-                        : t(STATE_NAMES[region.stateCode])}
-                    </option>
-                  );
-                })}
-            </select>
-          </div>
-          <div className="reset-icon" onClick={resetDropdown}>
-            <ReplyIcon />
-          </div>
-        </div> */}
-
+      <div className="Home">
+        <div style={{minHeight: '100vh', marginBottom: '3rem'}}>
+          <SectionWithFilter title="Filters" />
+          <Summary feedbackData={feedbackData} />
           <div
-            className={classnames('home-right', {expanded: expandTable})}
-            ref={homeRightElement}
-            style={{minHeight: '4rem'}}
+            style={{
+              maxWidth: '620px',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
           >
-            {(isVisible || location.hash) && (
-              <>
-                {data && (
-                  <div
-                    className={classnames('map-container', {
-                      expanded: expandTable,
-                      stickied:
-                        anchor === 'mapexplorer' ||
-                        (expandTable && width >= 769),
-                    })}
-                  >
-                    <Suspense fallback={<div style={{height: '50rem'}} />}>
-                      {/* <StateHeader data={data['TT']} stateCode={'TT'} /> */}
-                      <MapExplorer
-                        {...{
-                          stateCode: 'TT',
-                          data,
-                          mapStatistic,
-                          setMapStatistic,
-                          mapView,
-                          setMapView,
-                          regionHighlighted,
-                          setRegionHighlighted,
-                          anchor,
-                          setAnchor,
-                          expandTable,
-                          lastDataDate,
-                          hideDistrictData,
-                          hideDistrictTestData,
-                          hideVaccinated,
-                          noRegionHighlightedDistrictData,
-                        }}
-                      />
-                    </Suspense>
-                  </div>
-                )}
+            <SummaryDescription
+              title="Overall Summary"
+              summary={feedbackSummary?.summary}
+            />
+          </div>
+          <div className="ratings-chart">
+            <RatingChart
+              data={CATEGORY_CHART}
+              title="AI-Generated Summary Score"
+            />
+          </div>
+          <div className="ratings-chart">
+            <RatingChart
+              data={AVG_RATING_OVER_TIME}
+              title="Average Rating Over Time"
+              theme={{
+                background: '#0f2027',
+                barColor: '#4db6ac',
+                textColor: '#b2dfdb',
+              }}
+            />
+          </div>
+        </div>
 
-                {timeseries && (
+        <div
+          className={classnames('home-right', {expanded: expandTable})}
+          ref={homeRightElement}
+          style={{minHeight: '4rem'}}
+        >
+          {(isVisible || location.hash) && (
+            <>
+              {data && (
+                <div
+                  className={classnames('map-container', {
+                    expanded: expandTable,
+                    stickied:
+                      anchor === 'mapexplorer' || (expandTable && width >= 769),
+                  })}
+                >
                   <Suspense fallback={<div style={{height: '50rem'}} />}>
-                    <TimeseriesExplorer
-                      stateCode="TT"
+                    <MapExplorer
                       {...{
-                        timeseries,
-                        date,
+                        stateCode: 'TT',
+                        data,
+                        mapStatistic,
+                        setMapStatistic,
+                        mapView,
+                        setMapView,
                         regionHighlighted,
                         setRegionHighlighted,
                         anchor,
                         setAnchor,
                         expandTable,
+                        lastDataDate,
+                        hideDistrictData,
+                        hideDistrictTestData,
                         hideVaccinated,
                         noRegionHighlightedDistrictData,
                       }}
                     />
                   </Suspense>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+                </div>
+              )}
 
-        {isVisible && (
-          <Suspense fallback={<div />}>
-            <Footer />
-          </Suspense>
-        )}
-      </DataProvider>
+              <div className="ratings-chart">
+                <RatingChart
+                  data={NUM_FEEDBACKS_BY_CATEGORY}
+                  title="Number of Feedbacks by Category"
+                  theme={{
+                    background: '#3b1f0e', // dark burnt orange background
+                    barColor: '#f39c12', // vibrant orange for bars
+                    textColor: '#f5cba7',
+                  }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {isVisible && (
+        <Suspense fallback={<div />}>
+          <Footer />
+        </Suspense>
+      )}
     </>
   );
 }

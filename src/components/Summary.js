@@ -1,26 +1,49 @@
+import {useFilterContext} from '../contexts/filterContext';
+
 import React from 'react';
 
-const Summary = ({}) => {
+const Summary = ({feedbackData}) => {
+  console.log('this is the feedback data', feedbackData);
+  const {filters} = useFilterContext();
+  const getTotalRating = () => {
+    let sum = 0;
+    feedbackData.forEach((data) => {
+      sum = sum + (data?.rating ?? 0);
+    });
+    const rating = Math.round((sum / feedbackData.length) * 100) / 100;
+    return Number.isFinite(rating) ? rating : '-';
+  };
+
+  const getTotalCategories = () => {
+    console.log('this is the filters', filters);
+    if (filters.category) {
+      return 1;
+    }
+    const uniqueCategoryIds = Array.from(
+      new Set(
+        feedbackData?.flatMap((item) =>
+          item.categoryIds.split(',').map((id) => Number(id.trim()))
+        )
+      )
+    );
+
+    return uniqueCategoryIds?.length;
+  };
   const items = [
     {
-      title: 'Incidents Reported',
-      value: 500,
+      title: 'Total Feedbacks',
+      value: feedbackData?.length || 0,
       type: 'incidentsReported',
     },
     {
-      title: 'Positive Feedbacks',
-      value: 500,
+      title: 'Avg Rating',
+      value: getTotalRating(),
       type: 'total',
     },
     {
-      title: 'External Feedbacks',
-      value: 45637,
+      title: 'Total Categories',
+      value: getTotalCategories(),
       type: 'external',
-    },
-    {
-      title: 'Internal    Feedbacks',
-      value: 3456,
-      type: 'internal',
     },
   ];
 

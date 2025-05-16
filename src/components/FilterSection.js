@@ -1,8 +1,10 @@
+import PageLoader from './PageLoader';
+
 import {useDataContext} from '../contexts/dataContext';
 import {useFilterContext} from '../contexts/filterContext';
-import {DUMMY_CATEGORIES, PropertyData} from '../utils/commonFunctions';
+import {API_URL} from '../utils/commonFunctions';
 
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 const FilterSection = ({}) => {
   const DATE_DATA = [
@@ -21,35 +23,18 @@ const FilterSection = ({}) => {
   ];
   const [category, setCategory] = useState('');
   const [selectedState, setSelectedState] = useState('');
-  const [dateRange, setDateRange] = useState('1 Day');
+  const [dateRange, setDateRange] = useState('1W');
   const [selectedBrand, setSelectedBrand] = useState('');
-  const {setFilters} = useFilterContext();
-  const {commonData} = useDataContext();
+  const {filters, setFilters} = useFilterContext();
+  const {commonData, setData} = useDataContext();
+  const [loader, setLoader] = useState(false);
   const user = JSON.parse(sessionStorage.getItem('user'));
-  const handleChange = () => {
-    setFilters((st) => ({
-      ...st,
-      category: category,
-      dateRange: dateRange,
-      state: selectedState,
-      brand: selectedBrand,
-    }));
-  };
+  const handleChange = () => {};
 
-  const getBrands = async () => {
-    const data = await fetch('http://18.61.2.25:8080/brands/');
-    const jsonData = data.json();
-    console.log('this is the json data', jsonData);
-  };
-
-  useEffect(() => {
-    getBrands();
-  }, []);
-
-  const DUMMY_STATES = [
-    ...new Set(PropertyData.map((property) => property.state)),
+  const STATES = [
+    ...new Set(commonData.hotels.map((property) => property.state)),
   ];
-  console.log('these are the states', DUMMY_STATES);
+  console.log('these are the states', STATES);
   const selectStyle = {
     backgroundColor: '#1e1e2f',
     color: '#e0e0e0',
@@ -78,8 +63,76 @@ const FilterSection = ({}) => {
     justifyContent: 'space-between',
   };
 
+  const onSubmit = async () => {
+    let categoryFilter = '';
+    let stateFilter = '';
+    let brandFilter = '';
+    let dateFilter = '';
+    let propertyFilter = '';
+    setLoader(true);
+    setFilters({
+      category: category,
+      dateRange: dateRange,
+      state: selectedState,
+      brand: selectedBrand,
+    });
+    if (category) {
+      categoryFilter = `categoryId=${category}`;
+    }
+    if (selectedBrand) {
+      if (['BM', 'PM'].includes(user.userRole)) {
+        brandFilter = `brand=${user.brandId}`;
+      } else {
+        brandFilter = `brand=${selectedBrand}`;
+      }
+    } else if (user.userRole === 'BM') {
+      brandFilter = `brand=${user.brandId}`;
+    }
+    if (dateRange) {
+      dateFilter = `date=${dateRange}`;
+    } else {
+      dateFilter = `date=1W`;
+    }
+
+    if (selectedState) {
+      stateFilter = `state=${selectedState}`;
+    }
+    if (user.userRole === 'PM') {
+      propertyFilter = `propertyId=${user.propertyId}`;
+    } else if (filters.hotel) {
+      const propertyId = commonData.hotels.find(
+        (hotel) => hotel.name === filters.hotel
+      )?.id;
+      if (propertyId) {
+        propertyFilter = `propertyId=${propertyId}`;
+      }
+    }
+    console.log('this is the property filter', propertyFilter);
+    const queryParams = [
+      categoryFilter ? categoryFilter : '',
+      propertyFilter ? propertyFilter : '',
+      stateFilter ? stateFilter : '',
+      dateFilter ? dateFilter : '',
+      brandFilter ? brandFilter : '',
+    ]
+      .filter(Boolean) // remove empty strings
+      .join('&');
+
+    const finalQuery = queryParams ? `?${queryParams}` : '';
+    const url = `${API_URL}/feedbacks/${finalQuery}`;
+    const data = await fetch(url);
+    const jsonData = await data.json();
+    console.log('this is the json data', jsonData);
+    setData({
+      feedbackList: jsonData.feedbackList,
+      feedbackListAIResponse: jsonData.feedbackListAIResponse,
+    });
+    setLoader(false);
+  };
+  console.log('this is the commondata', commonData);
   return (
     <>
+      {loader && <PageLoader></PageLoader>}
       <div style={rowStyle}>
         <div style={{display: 'flex', flexDirection: 'column'}}>
           <label style={labelStyle}>Category</label>
@@ -91,8 +144,8 @@ const FilterSection = ({}) => {
               handleChange();
             }}
           >
-            <option value="all">All</option>
-            {DUMMY_CATEGORIES.map((category) => {
+            <option value="">All</option>
+            {commonData.categories.map((category) => {
               return (
                 <option value={category.id} key={category.id}>
                   {category.name}
@@ -131,8 +184,8 @@ const FilterSection = ({}) => {
                 handleChange();
               }}
             >
-              <option value="all">All</option>
-              {DUMMY_STATES.map((state) => (
+              <option value="">All</option>
+              {STATES.map((state) => (
                 <option value={state} key={state}>
                   {state}
                 </option>
@@ -160,7 +213,7 @@ const FilterSection = ({}) => {
         </div>
       </div>
       <div style={{textAlign: 'center'}}>
-        <button type="submit" className="small-submit-btn">
+        <button type="submit" className="small-submit-btn" onClick={onSubmit}>
           Submit
         </button>
       </div>
